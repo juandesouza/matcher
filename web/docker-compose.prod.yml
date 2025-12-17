@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: matcher-postgres-prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-matcher_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-matcher_password}
+      POSTGRES_DB: ${POSTGRES_DB:-matcher_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-matcher_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: matcher-app-prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-matcher_user}:${POSTGRES_PASSWORD:-matcher_password}@postgres:5432/${POSTGRES_DB:-matcher_db}
+      NODE_ENV: production
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT:-5173}:5173"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5173/api/auth/check', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+

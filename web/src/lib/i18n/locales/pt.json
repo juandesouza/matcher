@@ -1,0 +1,124 @@
+{
+	"app": {
+		"name": "Matcher",
+		"tagline": "Encontre sua combinação perfeita"
+	},
+	"common": {
+		"loading": "Carregando...",
+		"save": "Salvar",
+		"cancel": "Cancelar",
+		"delete": "Excluir",
+		"edit": "Editar",
+		"close": "Fechar",
+		"back": "Voltar",
+		"next": "Próximo",
+		"previous": "Anterior",
+		"submit": "Enviar",
+		"search": "Buscar",
+		"filter": "Filtrar",
+		"refresh": "Atualizar"
+	},
+	"auth": {
+		"login": "Entrar",
+		"logout": "Sair",
+		"signup": "Cadastrar",
+		"email": "E-mail",
+		"password": "Senha",
+		"forgotPassword": "Esqueceu a senha?",
+		"noAccount": "Não tem uma conta?",
+		"hasAccount": "Já tem uma conta?",
+		"loginWithGoogle": "Continuar com Google",
+		"orContinueWith": "Ou continue com",
+		"loginFailed": "Falha no login",
+		"invalidCredentials": "Credenciais inválidas",
+		"networkError": "Erro de rede. Tente novamente."
+	},
+	"home": {
+		"title": "Encontre Sua Combinação",
+		"noMoreCards": "Sem mais cartas",
+		"checkBackLater": "Volte mais tarde para mais combinações!",
+		"allCaughtUp": "Você está em dia!",
+		"checkBackLaterShort": "Volte mais tarde para mais combinações.",
+		"swipeLeft": "Deslize para a esquerda para passar",
+		"swipeRight": "Deslize para a direita para curtir",
+		"like": "Curtir",
+		"dislike": "Não curtir"
+	},
+	"matches": {
+		"title": "Suas Combinações",
+		"noMatches": "Ainda sem combinações",
+		"keepSwiping": "Continue deslizando para encontrar sua combinação!",
+		"openChat": "Abrir conversa",
+		"itsAMatch": "É uma Combinação!",
+		"youMatched": "Você e {name} curtiram um ao outro",
+		"sendMessage": "Enviar uma Mensagem",
+		"keepSwiping": "Continuar Deslizando",
+		"matchNotFound": "Combinação não encontrada",
+		"goHome": "Ir para Início"
+	},
+	"chat": {
+		"title": "Conversa",
+		"noMessages": "Ainda sem mensagens. Inicie a conversa!",
+		"typeMessage": "Digite uma mensagem...",
+		"send": "Enviar",
+		"sendImage": "Enviar imagem",
+		"sendVideo": "Enviar vídeo",
+		"recordAudio": "Gravar áudio",
+		"loadingMessages": "Carregando mensagens...",
+		"advertisement": "Publicidade"
+	},
+	"settings": {
+		"title": "Configurações",
+		"theme": "Tema",
+		"themeDescription": "Alternar entre modo escuro e claro",
+		"ageRange": "Faixa Etária",
+		"minAge": "Idade Mínima",
+		"maxAge": "Idade Máxima",
+		"distanceRange": "Distância",
+		"maxDistance": "Distância máxima: {distance} km",
+		"removeAds": "Remover Anúncios",
+		"removeAdsDescription": "Assine para remover todos os anúncios",
+		"subscribed": "Você está inscrito! Nenhum anúncio será exibido.",
+		"notSubscribed": "Assine para remover todos os anúncios",
+		"subscribe": "Assinar",
+		"language": "Idioma",
+		"languageDescription": "Escolha seu idioma preferido",
+		"settingsSaved": "Configurações salvas!",
+		"saveSettings": "Salvar Configurações"
+	},
+	"subscribe": {
+		"title": "Remover Anúncios",
+		"subtitle": "Assine para aproveitar o Matcher sem interrupções",
+		"perMonth": "por mês",
+		"features": {
+			"removeAds": "Remover todos os anúncios",
+			"unlimitedSwipes": "Deslizes ilimitados",
+			"seeWhoLiked": "Veja quem curtiu você",
+			"prioritySupport": "Suporte prioritário ao cliente"
+		},
+		"subscribeNow": "Assinar Agora",
+		"processing": "Processando...",
+		"cancelAnytime": "Cancele a qualquer momento. Sem taxas ocultas."
+	},
+	"terms": {
+		"title": "Termos de Uso",
+		"lastUpdated": "Última atualização: {date}"
+	},
+	"privacy": {
+		"title": "Política de Privacidade",
+		"lastUpdated": "Última atualização: {date}"
+	},
+	"navigation": {
+		"discover": "Descobrir",
+		"matches": "Combinações",
+		"chat": "Conversa",
+		"settings": "Configurações"
+	},
+	"errors": {
+		"generic": "Algo deu errado. Tente novamente.",
+		"unauthorized": "Não autorizado",
+		"notFound": "Não encontrado",
+		"serverError": "Erro do servidor"
+	}
+}
+

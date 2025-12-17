@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  password         String?
+  age              Int?
+  gender           String?
+  bio              String?
+  photos           String[]
+  location         Json?
+  ageRange         Json      @default("{\"max\": 99, \"min\": 18}")
+  distanceRange    Int       @default(50)
+  theme            String    @default("dark")
+  isSubscribed     Boolean   @default(false)
+  stripeCustomerId String?   @unique
+  provider         String?
+  providerId       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  chats            Chat[]    @relation("ChatUsers")
+  chatUsers        Chat[]    @relation("ChatParticipants")
+  matchUsers       Match[]   @relation("MatchedUsers")
+  matches          Match[]   @relation("UserMatches")
+  messages         Message[]
+  receivedSwipes   Swipe[]   @relation("TargetUserSwipes")
+  swipes           Swipe[]   @relation("UserSwipes")
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("User")
+}
+
+model Swipe {
+  id           String   @id @default(cuid())
+  userId       String
+  targetUserId String
+  action       String
+  createdAt    DateTime @default(now())
+  targetUser   User     @relation("TargetUserSwipes", fields: [targetUserId], references: [id], onDelete: Cascade)
+  user         User     @relation("UserSwipes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetUserId])
+  @@index([userId])
+  @@index([targetUserId])
+}
+
+model Match {
+  id            String   @id @default(cuid())
+  userId        String
+  matchedUserId String
+  createdAt     DateTime @default(now())
+  chats         Chat[]
+  matchedUser   User     @relation("MatchedUsers", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  user          User     @relation("UserMatches", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchedUserId])
+  @@index([userId])
+  @@index([matchedUserId])
+}
+
+model Chat {
+  id        String    @id @default(cuid())
+  matchId   String
+  userId1   String
+  userId2   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  match     Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user1     User      @relation("ChatUsers", fields: [userId1], references: [id], onDelete: Cascade)
+  user2     User      @relation("ChatParticipants", fields: [userId2], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([userId1, userId2])
+  @@index([matchId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String
+  userId    String
+  content   String
+  type      String   @default("text")
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([createdAt])
+}
+
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Key {
+  id             String  @id
+  userId         String  @map("user_id")
+  hashedPassword String? @map("hashed_password")
+  providerId     String  @map("provider_id")
+  providerUserId String  @map("provider_user_id")
+
+  @@unique([providerId, providerUserId])
+  @@unique([id, userId])
+  @@index([userId])
+  @@map("key")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_token")
+}

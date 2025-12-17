@@ -1,0 +1,96 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+      
+      - name: Generate Prisma Client
+        working-directory: ./web
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+      
+      - name: Run database migrations
+        working-directory: ./web
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+      
+      - name: Build application
+        working-directory: ./web
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+      
+      - name: Generate Prisma Client
+        working-directory: ./web
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Build application
+        working-directory: ./web
+        run: npm run build:prod
+        env:
+          NODE_ENV: production
+      
+      # Add your deployment steps here
+      # Examples:
+      # - Deploy to VPS via SSH
+      # - Deploy to Docker registry
+      # - Deploy to cloud platform (Render, Railway, etc.)
+

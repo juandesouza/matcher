@@ -1,0 +1,124 @@
+{
+	"app": {
+		"name": "Matcher",
+		"tagline": "Find your perfect match"
+	},
+	"common": {
+		"loading": "Loading...",
+		"save": "Save",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"edit": "Edit",
+		"close": "Close",
+		"back": "Back",
+		"next": "Next",
+		"previous": "Previous",
+		"submit": "Submit",
+		"search": "Search",
+		"filter": "Filter",
+		"refresh": "Refresh"
+	},
+	"auth": {
+		"login": "Login",
+		"logout": "Logout",
+		"signup": "Sign Up",
+		"email": "Email",
+		"password": "Password",
+		"forgotPassword": "Forgot password?",
+		"noAccount": "Don't have an account?",
+		"hasAccount": "Already have an account?",
+		"loginWithGoogle": "Continue with Google",
+		"orContinueWith": "Or continue with",
+		"loginFailed": "Login failed",
+		"invalidCredentials": "Invalid credentials",
+		"networkError": "Network error. Please try again."
+	},
+	"home": {
+		"title": "Find Your Match",
+		"noMoreCards": "No more cards",
+		"checkBackLater": "Check back later for more matches!",
+		"allCaughtUp": "You're all caught up!",
+		"checkBackLaterShort": "Check back later for more matches.",
+		"swipeLeft": "Swipe left to pass",
+		"swipeRight": "Swipe right to like",
+		"like": "Like",
+		"dislike": "Dislike"
+	},
+	"matches": {
+		"title": "Your Matches",
+		"noMatches": "No matches yet",
+		"keepSwiping": "Keep swiping to find your match!",
+		"openChat": "Open chat",
+		"itsAMatch": "It's a Match!",
+		"youMatched": "You and {name} liked each other",
+		"sendMessage": "Send a Message",
+		"keepSwiping": "Keep Swiping",
+		"matchNotFound": "Match not found",
+		"goHome": "Go Home"
+	},
+	"chat": {
+		"title": "Chat",
+		"noMessages": "No messages yet. Start the conversation!",
+		"typeMessage": "Type a message...",
+		"send": "Send",
+		"sendImage": "Send image",
+		"sendVideo": "Send video",
+		"recordAudio": "Record audio",
+		"loadingMessages": "Loading messages...",
+		"advertisement": "Advertisement"
+	},
+	"settings": {
+		"title": "Settings",
+		"theme": "Theme",
+		"themeDescription": "Switch between dark and light mode",
+		"ageRange": "Age Range",
+		"minAge": "Min Age",
+		"maxAge": "Max Age",
+		"distanceRange": "Distance Range",
+		"maxDistance": "Maximum distance: {distance} km",
+		"removeAds": "Remove Ads",
+		"removeAdsDescription": "Subscribe to remove all advertisements",
+		"subscribed": "You're subscribed! No ads will be shown.",
+		"notSubscribed": "Subscribe to remove all advertisements",
+		"subscribe": "Subscribe",
+		"language": "Language",
+		"languageDescription": "Choose your preferred language",
+		"settingsSaved": "Settings saved!",
+		"saveSettings": "Save Settings"
+	},
+	"subscribe": {
+		"title": "Remove Ads",
+		"subtitle": "Subscribe to enjoy Matcher without interruptions",
+		"perMonth": "per month",
+		"features": {
+			"removeAds": "Remove all advertisements",
+			"unlimitedSwipes": "Unlimited swipes",
+			"seeWhoLiked": "See who liked you",
+			"prioritySupport": "Priority customer support"
+		},
+		"subscribeNow": "Subscribe Now",
+		"processing": "Processing...",
+		"cancelAnytime": "Cancel anytime. No hidden fees."
+	},
+	"terms": {
+		"title": "Terms of Use",
+		"lastUpdated": "Last updated: {date}"
+	},
+	"privacy": {
+		"title": "Privacy Policy",
+		"lastUpdated": "Last updated: {date}"
+	},
+	"navigation": {
+		"discover": "Discover",
+		"matches": "Matches",
+		"chat": "Chat",
+		"settings": "Settings"
+	},
+	"errors": {
+		"generic": "Something went wrong. Please try again.",
+		"unauthorized": "Unauthorized",
+		"notFound": "Not found",
+		"serverError": "Server error"
+	}
+}
+

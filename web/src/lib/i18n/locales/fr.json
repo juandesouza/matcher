@@ -1,0 +1,124 @@
+{
+	"app": {
+		"name": "Matcher",
+		"tagline": "Trouvez votre partenaire idéal"
+	},
+	"common": {
+		"loading": "Chargement...",
+		"save": "Enregistrer",
+		"cancel": "Annuler",
+		"delete": "Supprimer",
+		"edit": "Modifier",
+		"close": "Fermer",
+		"back": "Retour",
+		"next": "Suivant",
+		"previous": "Précédent",
+		"submit": "Soumettre",
+		"search": "Rechercher",
+		"filter": "Filtrer",
+		"refresh": "Actualiser"
+	},
+	"auth": {
+		"login": "Se connecter",
+		"logout": "Se déconnecter",
+		"signup": "S'inscrire",
+		"email": "E-mail",
+		"password": "Mot de passe",
+		"forgotPassword": "Mot de passe oublié ?",
+		"noAccount": "Vous n'avez pas de compte ?",
+		"hasAccount": "Vous avez déjà un compte ?",
+		"loginWithGoogle": "Continuer avec Google",
+		"orContinueWith": "Ou continuer avec",
+		"loginFailed": "Échec de la connexion",
+		"invalidCredentials": "Identifiants invalides",
+		"networkError": "Erreur réseau. Veuillez réessayer."
+	},
+	"home": {
+		"title": "Trouvez Votre Partenaire",
+		"noMoreCards": "Plus de cartes",
+		"checkBackLater": "Revenez plus tard pour plus de correspondances !",
+		"allCaughtUp": "Vous êtes à jour !",
+		"checkBackLaterShort": "Revenez plus tard pour plus de correspondances.",
+		"swipeLeft": "Glissez vers la gauche pour passer",
+		"swipeRight": "Glissez vers la droite pour aimer",
+		"like": "J'aime",
+		"dislike": "Je n'aime pas"
+	},
+	"matches": {
+		"title": "Vos Correspondances",
+		"noMatches": "Pas encore de correspondances",
+		"keepSwiping": "Continuez à glisser pour trouver votre partenaire !",
+		"openChat": "Ouvrir le chat",
+		"itsAMatch": "C'est un Match !",
+		"youMatched": "Vous et {name} vous êtes aimés mutuellement",
+		"sendMessage": "Envoyer un Message",
+		"keepSwiping": "Continuer à Glisser",
+		"matchNotFound": "Correspondance non trouvée",
+		"goHome": "Aller à l'Accueil"
+	},
+	"chat": {
+		"title": "Chat",
+		"noMessages": "Pas encore de messages. Commencez la conversation !",
+		"typeMessage": "Tapez un message...",
+		"send": "Envoyer",
+		"sendImage": "Envoyer une image",
+		"sendVideo": "Envoyer une vidéo",
+		"recordAudio": "Enregistrer l'audio",
+		"loadingMessages": "Chargement des messages...",
+		"advertisement": "Publicité"
+	},
+	"settings": {
+		"title": "Paramètres",
+		"theme": "Thème",
+		"themeDescription": "Basculer entre le mode sombre et clair",
+		"ageRange": "Tranche d'Âge",
+		"minAge": "Âge Minimum",
+		"maxAge": "Âge Maximum",
+		"distanceRange": "Distance",
+		"maxDistance": "Distance maximale : {distance} km",
+		"removeAds": "Supprimer les Publicités",
+		"removeAdsDescription": "Abonnez-vous pour supprimer toutes les publicités",
+		"subscribed": "Vous êtes abonné ! Aucune publicité ne sera affichée.",
+		"notSubscribed": "Abonnez-vous pour supprimer toutes les publicités",
+		"subscribe": "S'abonner",
+		"language": "Langue",
+		"languageDescription": "Choisissez votre langue préférée",
+		"settingsSaved": "Paramètres enregistrés !",
+		"saveSettings": "Enregistrer les Paramètres"
+	},
+	"subscribe": {
+		"title": "Supprimer les Publicités",
+		"subtitle": "Abonnez-vous pour profiter de Matcher sans interruption",
+		"perMonth": "par mois",
+		"features": {
+			"removeAds": "Supprimer toutes les publicités",
+			"unlimitedSwipes": "Glissements illimités",
+			"seeWhoLiked": "Voir qui vous a aimé",
+			"prioritySupport": "Support client prioritaire"
+		},
+		"subscribeNow": "S'abonner Maintenant",
+		"processing": "Traitement...",
+		"cancelAnytime": "Annulez à tout moment. Aucun frais caché."
+	},
+	"terms": {
+		"title": "Conditions d'Utilisation",
+		"lastUpdated": "Dernière mise à jour : {date}"
+	},
+	"privacy": {
+		"title": "Politique de Confidentialité",
+		"lastUpdated": "Dernière mise à jour : {date}"
+	},
+	"navigation": {
+		"discover": "Découvrir",
+		"matches": "Correspondances",
+		"chat": "Chat",
+		"settings": "Paramètres"
+	},
+	"errors": {
+		"generic": "Quelque chose s'est mal passé. Veuillez réessayer.",
+		"unauthorized": "Non autorisé",
+		"notFound": "Non trouvé",
+		"serverError": "Erreur serveur"
+	}
+}
+

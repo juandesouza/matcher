@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unregister Service Worker</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #f3f3f3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+        }
+        .wrapper {
+            max-width: 600px;
+            background: #1f1f1f;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        h1 {
+            margin-top: 0;
+            color: #f87171;
+        }
+        button {
+            background: #C62828;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background: #B71C1C;
+        }
+        #status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #2d2d2d;
+            border-radius: 8px;
+        }
+        .success {
+            color: #4ade80;
+        }
+        .error {
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>Unregister Service Worker</h1>
+        <p>This will unregister any active service workers for this site. This is necessary to fix OAuth callback issues.</p>
+        <button onclick="unregisterSW()">Unregister Service Worker</button>
+        <div id="status"></div>
+    </div>
+    <script>
+        async function unregisterSW() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Checking for service workers...';
+            
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    
+                    if (registrations.length === 0) {
+                        status.innerHTML = '<span class="success">✅ No service workers found. You\'re all set!</span>';
+                        return;
+                    }
+                    
+                    status.innerHTML = `Found ${registrations.length} service worker(s). Unregistering...`;
+                    
+                    for (let registration of registrations) {
+                        const unregistered = await registration.unregister();
+                        if (unregistered) {
+                            status.innerHTML += `<br><span class="success">✅ Unregistered: ${registration.scope}</span>`;
+                        } else {
+                            status.innerHTML += `<br><span class="error">❌ Failed to unregister: ${registration.scope}</span>`;
+                        }
+                    }
+                    
+                    // Clear all caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        for (let cacheName of cacheNames) {
+                            await caches.delete(cacheName);
+                            status.innerHTML += `<br><span class="success">✅ Deleted cache: ${cacheName}</span>`;
+                        }
+                    }
+                    
+                    status.innerHTML += '<br><br><span class="success">✅ Done! Now:</span>';
+                    status.innerHTML += '<br>1. Close this tab';
+                    status.innerHTML += '<br>2. Go back to your app';
+                    status.innerHTML += '<br>3. Hard reload (Ctrl+Shift+R or Cmd+Shift+R)';
+                    status.innerHTML += '<br>4. Try Google OAuth again';
+                } else {
+                    status.innerHTML = '<span class="error">❌ Service workers are not supported in this browser.</span>';
+                }
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                console.error('Error unregistering service worker:', error);
+            }
+        }
+        
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            setTimeout(unregisterSW, 500);
+        });
+    </script>
+</body>
+</html>
+

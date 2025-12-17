@@ -1,0 +1,124 @@
+{
+	"app": {
+		"name": "Matcher",
+		"tagline": "Trova la tua corrispondenza perfetta"
+	},
+	"common": {
+		"loading": "Caricamento...",
+		"save": "Salva",
+		"cancel": "Annulla",
+		"delete": "Elimina",
+		"edit": "Modifica",
+		"close": "Chiudi",
+		"back": "Indietro",
+		"next": "Successivo",
+		"previous": "Precedente",
+		"submit": "Invia",
+		"search": "Cerca",
+		"filter": "Filtra",
+		"refresh": "Aggiorna"
+	},
+	"auth": {
+		"login": "Accedi",
+		"logout": "Esci",
+		"signup": "Registrati",
+		"email": "E-mail",
+		"password": "Password",
+		"forgotPassword": "Password dimenticata?",
+		"noAccount": "Non hai un account?",
+		"hasAccount": "Hai già un account?",
+		"loginWithGoogle": "Continua con Google",
+		"orContinueWith": "Oppure continua con",
+		"loginFailed": "Accesso fallito",
+		"invalidCredentials": "Credenziali non valide",
+		"networkError": "Errore di rete. Riprova."
+	},
+	"home": {
+		"title": "Trova la Tua Corrispondenza",
+		"noMoreCards": "Nessuna altra carta",
+		"checkBackLater": "Torna più tardi per altre corrispondenze!",
+		"allCaughtUp": "Sei aggiornato!",
+		"checkBackLaterShort": "Torna più tardi per altre corrispondenze.",
+		"swipeLeft": "Scorri a sinistra per passare",
+		"swipeRight": "Scorri a destra per mettere mi piace",
+		"like": "Mi piace",
+		"dislike": "Non mi piace"
+	},
+	"matches": {
+		"title": "Le Tue Corrispondenze",
+		"noMatches": "Ancora nessuna corrispondenza",
+		"keepSwiping": "Continua a scorrere per trovare la tua corrispondenza!",
+		"openChat": "Apri chat",
+		"itsAMatch": "È una Corrispondenza!",
+		"youMatched": "Tu e {name} vi siete piaciuti a vicenda",
+		"sendMessage": "Invia un Messaggio",
+		"keepSwiping": "Continua a Scorrere",
+		"matchNotFound": "Corrispondenza non trovata",
+		"goHome": "Vai alla Home"
+	},
+	"chat": {
+		"title": "Chat",
+		"noMessages": "Ancora nessun messaggio. Inizia la conversazione!",
+		"typeMessage": "Scrivi un messaggio...",
+		"send": "Invia",
+		"sendImage": "Invia immagine",
+		"sendVideo": "Invia video",
+		"recordAudio": "Registra audio",
+		"loadingMessages": "Caricamento messaggi...",
+		"advertisement": "Pubblicità"
+	},
+	"settings": {
+		"title": "Impostazioni",
+		"theme": "Tema",
+		"themeDescription": "Passa tra modalità scura e chiara",
+		"ageRange": "Fascia d'Età",
+		"minAge": "Età Minima",
+		"maxAge": "Età Massima",
+		"distanceRange": "Distanza",
+		"maxDistance": "Distanza massima: {distance} km",
+		"removeAds": "Rimuovi Pubblicità",
+		"removeAdsDescription": "Abbonati per rimuovere tutte le pubblicità",
+		"subscribed": "Sei abbonato! Nessuna pubblicità verrà mostrata.",
+		"notSubscribed": "Abbonati per rimuovere tutte le pubblicità",
+		"subscribe": "Abbonati",
+		"language": "Lingua",
+		"languageDescription": "Scegli la tua lingua preferita",
+		"settingsSaved": "Impostazioni salvate!",
+		"saveSettings": "Salva Impostazioni"
+	},
+	"subscribe": {
+		"title": "Rimuovi Pubblicità",
+		"subtitle": "Abbonati per goderti Matcher senza interruzioni",
+		"perMonth": "al mese",
+		"features": {
+			"removeAds": "Rimuovi tutte le pubblicità",
+			"unlimitedSwipes": "Scorrimenti illimitati",
+			"seeWhoLiked": "Vedi chi ti ha messo mi piace",
+			"prioritySupport": "Supporto clienti prioritario"
+		},
+		"subscribeNow": "Abbonati Ora",
+		"processing": "Elaborazione...",
+		"cancelAnytime": "Annulla in qualsiasi momento. Nessun costo nascosto."
+	},
+	"terms": {
+		"title": "Termini di Utilizzo",
+		"lastUpdated": "Ultimo aggiornamento: {date}"
+	},
+	"privacy": {
+		"title": "Informativa sulla Privacy",
+		"lastUpdated": "Ultimo aggiornamento: {date}"
+	},
+	"navigation": {
+		"discover": "Scopri",
+		"matches": "Corrispondenze",
+		"chat": "Chat",
+		"settings": "Impostazioni"
+	},
+	"errors": {
+		"generic": "Qualcosa è andato storto. Riprova.",
+		"unauthorized": "Non autorizzato",
+		"notFound": "Non trovato",
+		"serverError": "Errore del server"
+	}
+}
+
