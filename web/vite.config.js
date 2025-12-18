@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { prismaDirnamePolyfill } from './vite-plugin-prisma-dirname.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -29,7 +30,9 @@ export default defineConfig({
 			csrf: {
 				checkOrigin: isProduction
 			}
-		})
+		}),
+		// Inject __dirname polyfill for Prisma
+		prismaDirnamePolyfill()
 		// PWA plugin removed to prevent service worker from blocking OAuth callbacks
 		// Can be re-enabled later if needed for production
 	],

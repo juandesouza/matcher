@@ -55,13 +55,19 @@ export async function requireAuth(cookies, returnJson = false) {
  * @returns {Promise<{session: import('lucia').Session | null, user: import('lucia').User | null}>}
  */
 export async function getSessionAndUser(cookies) {
-	const sessionId = cookies.get(lucia.sessionCookieName);
-	if (!sessionId) {
+	try {
+		const sessionId = cookies.get(lucia.sessionCookieName);
+		if (!sessionId) {
+			return { session: null, user: null };
+		}
+
+		const { session, user } = await lucia.validateSession(sessionId);
+		return { session, user };
+	} catch (error) {
+		// Log error but don't throw - allows app to continue
+		console.error('Error validating session:', error);
 		return { session: null, user: null };
 	}
-
-	const { session, user } = await lucia.validateSession(sessionId);
-	return { session, user };
 }
 
 

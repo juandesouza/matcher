@@ -1,3 +1,5 @@
+// Import polyfill first to ensure __dirname is available for Prisma
+import '../lib/polyfills/dirname.js';
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis;

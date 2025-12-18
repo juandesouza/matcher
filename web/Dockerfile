@@ -42,6 +42,9 @@ EXPOSE 5173
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:5173/api/auth/check', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
+# Copy startup script
+COPY start.js ./
+
 # Start application
-CMD ["node", "build/index.js"]
+CMD ["node", "start.js"]
 
