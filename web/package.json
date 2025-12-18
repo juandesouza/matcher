@@ -30,6 +30,9 @@
 		"vite": "^5.0.0",
 		"workbox-expiration": "^7.4.0"
 	},
+	"prisma": {
+		"seed": "node prisma/seed.js"
+	},
 	"dependencies": {
 		"@lucia-auth/adapter-postgresql": "^3.1.2",
 		"@skeletonlabs/skeleton": "^2.8.0",
