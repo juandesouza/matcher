@@ -1,6 +1,3 @@
-// Import polyfill first to ensure __dirname is available for Prisma
-import './lib/polyfills/dirname.js';
-
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
 	// Allow ngrok domains and localhost for development
