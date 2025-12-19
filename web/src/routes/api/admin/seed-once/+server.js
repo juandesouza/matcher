@@ -22,9 +22,10 @@ export async function POST({ request }) {
 		// One-time seed endpoint - no authentication required
 		// This should be removed after seeding is complete
 		console.log('[Admin Seed Once] Starting database seed (one-time, no auth)...');
+		console.log('[Admin Seed Once] Working directory:', projectRoot);
 		
-		// Run the seed script
-		const { stdout, stderr } = await execAsync(`node ${seedScriptPath}`, {
+		// Use npx prisma db seed which handles paths automatically
+		const { stdout, stderr } = await execAsync(`npx prisma db seed`, {
 			cwd: projectRoot,
 			env: {
 				...process.env,

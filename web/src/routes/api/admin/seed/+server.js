@@ -38,9 +38,10 @@ export async function POST({ request }) {
 		}
 
 		console.log('[Admin Seed] Starting database seed...');
+		console.log('[Admin Seed] Working directory:', projectRoot);
 		
-		// Run the seed script
-		const { stdout, stderr } = await execAsync(`node ${seedScriptPath}`, {
+		// Use npx prisma db seed which handles paths automatically
+		const { stdout, stderr } = await execAsync(`npx prisma db seed`, {
 			cwd: projectRoot,
 			env: {
 				...process.env,
