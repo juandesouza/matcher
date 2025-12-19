@@ -24,25 +24,18 @@ export async function POST({ request }) {
 		console.log('[Admin Seed Once] Starting database seed (one-time, no auth)...');
 		console.log('[Admin Seed Once] Working directory:', projectRoot);
 		
-		// Generate Prisma client first, then run seed
-		console.log('[Admin Seed Once] Generating Prisma client...');
-		await execAsync(`npx prisma generate`, {
-			cwd: projectRoot,
-			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
-			timeout: 60000 // 60 second timeout
-		});
-		
+		// Prisma client should already be generated during build
+		// Just run the seed script directly
 		console.log('[Admin Seed Once] Running seed script...');
-		// Use npx prisma db seed which handles paths automatically
-		// Increase timeout for seed operation (creating 60 users can take time)
-		const { stdout, stderr } = await execAsync(`npx prisma db seed`, {
+		const seedScriptPath = join(projectRoot, 'prisma/seed.js');
+		const { stdout, stderr } = await execAsync(`node ${seedScriptPath}`, {
 			cwd: projectRoot,
 			env: {
 				...process.env,
 				// Ensure DATABASE_URL is set from environment
 				DATABASE_URL: process.env.DATABASE_URL
 			},
-			timeout: 300000 // 5 minute timeout for seed operation
+			timeout: 60000 // 1 minute timeout (only 4 users now)
 		});
 
 		console.log('[Admin Seed Once] Seed output:', stdout);
