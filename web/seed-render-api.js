@@ -18,6 +18,8 @@ config({ path: join(__dirname, '.env') });
 
 const RENDER_API_KEY = process.env.RENDER_API_KEY;
 const RENDER_SERVICE_URL = process.env.RENDER_SERVICE_URL || 'https://matcher-m0o4.onrender.com';
+// Use the default secret from the admin endpoint if SEED_SECRET is not set
+// This matches the default in web/src/routes/api/admin/seed/+server.js
 const SEED_SECRET = process.env.SEED_SECRET || 'temporary-seed-secret-change-in-production';
 
 if (!RENDER_API_KEY) {
@@ -60,19 +62,33 @@ async function triggerSeed() {
 	console.log('🌱 Triggering database seed on Render service...');
 	console.log(`   Service URL: ${RENDER_SERVICE_URL}\n`);
 
-	const seedEndpoint = `${RENDER_SERVICE_URL}/api/admin/seed`;
+	// Try the one-time endpoint first (no auth required)
+	let seedEndpoint = `${RENDER_SERVICE_URL}/api/admin/seed-once`;
 	
-	console.log('📡 Calling seed endpoint...');
+	console.log('📡 Calling seed endpoint (one-time, no auth)...');
 	
-	const response = await fetch(seedEndpoint, {
+	let response = await fetch(seedEndpoint, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({
-			secret: SEED_SECRET
-		})
+		body: JSON.stringify({})
 	});
+
+	// If one-time endpoint doesn't exist (404), try the authenticated endpoint
+	if (response.status === 404) {
+		console.log('⚠️  One-time endpoint not found, trying authenticated endpoint...');
+		seedEndpoint = `${RENDER_SERVICE_URL}/api/admin/seed`;
+		response = await fetch(seedEndpoint, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				secret: SEED_SECRET
+			})
+		});
+	}
 
 	if (!response.ok) {
 		const error = await response.text();
