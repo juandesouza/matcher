@@ -24,8 +24,21 @@ export async function POST({ request }) {
 		console.log('[Admin Seed Once] Starting database seed (one-time, no auth)...');
 		console.log('[Admin Seed Once] Working directory:', projectRoot);
 		
-		// Prisma client should already be generated during build
-		// Just run the seed script directly
+		// Run migrations first to ensure tables exist
+		console.log('[Admin Seed Once] Running database migrations...');
+		try {
+			await execAsync(`npx prisma migrate deploy`, {
+				cwd: projectRoot,
+				env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+				timeout: 60000
+			});
+			console.log('[Admin Seed Once] Migrations completed.');
+		} catch (error) {
+			console.log('[Admin Seed Once] Migration warning:', error.message);
+			// Continue anyway - tables might already exist
+		}
+		
+		// Run the seed script
 		console.log('[Admin Seed Once] Running seed script...');
 		const seedScriptPath = join(projectRoot, 'prisma/seed.js');
 		const { stdout, stderr } = await execAsync(`node ${seedScriptPath}`, {

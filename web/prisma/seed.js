@@ -177,21 +177,35 @@ async function main() {
 	console.log('🌱 Starting database seed...\n');
 	console.log('This will create 2 fake men and 2 fake women in the database.\n');
 
-	// Delete all existing fake users first
+	// Delete all existing fake users first (if tables exist)
 	console.log('🗑️  Deleting existing fake users...');
-	const deleteResult = await prisma.user.deleteMany({
-		where: {
-			email: { startsWith: 'fake_' }
-		}
-	});
-	console.log(`   Deleted ${deleteResult.count} existing fake users.\n`);
+	try {
+		const deleteResult = await prisma.user.deleteMany({
+			where: {
+				email: { startsWith: 'fake_' }
+			}
+		});
+		console.log(`   Deleted ${deleteResult.count} existing fake users.\n`);
 
-	// Also delete associated keys for fake users
-	await prisma.key.deleteMany({
-		where: {
-			providerUserId: { startsWith: 'fake_' }
+		// Also delete associated keys for fake users
+		try {
+			await prisma.key.deleteMany({
+				where: {
+					providerUserId: { startsWith: 'fake_' }
+				}
+			});
+		} catch (error) {
+			// Key table might not exist, that's okay
+			console.log('   (Skipping key deletion - table may not exist)\n');
 		}
-	});
+	} catch (error) {
+		if (error.code === 'P2021') {
+			console.log('   ⚠️  Database tables do not exist yet. Run migrations first: npm run db:migrate\n');
+			console.log('   Continuing to create users (migrations should create tables)...\n');
+		} else {
+			throw error;
+		}
+	}
 
 	// Create 2 fake women
 	const womenCreated = await createFakeUsers('female', 2);
