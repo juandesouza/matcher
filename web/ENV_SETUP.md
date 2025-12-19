@@ -98,6 +98,22 @@ SESSION_SECRET="your-random-32-char-secret"
 CORS_ORIGINS="http://localhost:5173,http://localhost:8081"
 ```
 
+### Render Deployment (Production Only)
+
+```bash
+# Render API Key for managing services via API
+# Get from: https://dashboard.render.com/account/api-keys
+RENDER_API_KEY="rnd_..."
+
+# Render service URL (your deployed app URL)
+# Example: https://matcher-m0o4.onrender.com
+RENDER_SERVICE_URL="https://your-app.onrender.com"
+
+# Secret for admin seed endpoint (change in production!)
+# Generate with: openssl rand -base64 32
+SEED_SECRET="your-random-secret-for-seeding"
+```
+
 ## Mobile App Environment Variables (mobile/.env)
 
 Create a `.env` file in the `mobile/` directory:
