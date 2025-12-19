@@ -116,11 +116,14 @@ async function createFakeUsers(gender, count) {
 	
 	console.log(`\nCreating ${count} fake ${genderLabel}...\n`);
 
-	const cities = [
-		{ name: 'Ilhéus', location: locations.ilheus, count: Math.floor(count / 3) },
-		{ name: 'Una', location: locations.una, count: Math.floor(count / 3) },
-		{ name: 'Canavieiras', location: locations.canavieiras, count: count - (2 * Math.floor(count / 3)) }
-	];
+	// For small counts, just use one city
+	const cities = count <= 4 
+		? [{ name: 'Ilhéus', location: locations.ilheus, count: count }]
+		: [
+			{ name: 'Ilhéus', location: locations.ilheus, count: Math.floor(count / 3) },
+			{ name: 'Una', location: locations.una, count: Math.floor(count / 3) },
+			{ name: 'Canavieiras', location: locations.canavieiras, count: count - (2 * Math.floor(count / 3)) }
+		];
 
 	let created = 0;
 
@@ -172,26 +175,29 @@ async function createFakeUsers(gender, count) {
 
 async function main() {
 	console.log('🌱 Starting database seed...\n');
-	console.log('This will create 30 fake men and 30 fake women in the database.\n');
+	console.log('This will create 2 fake men and 2 fake women in the database.\n');
 
-	// Check if fake users already exist
-	const existingFakeUsers = await prisma.user.findMany({
+	// Delete all existing fake users first
+	console.log('🗑️  Deleting existing fake users...');
+	const deleteResult = await prisma.user.deleteMany({
 		where: {
 			email: { startsWith: 'fake_' }
 		}
 	});
+	console.log(`   Deleted ${deleteResult.count} existing fake users.\n`);
 
-	if (existingFakeUsers.length > 0) {
-		console.log(`⚠️  Warning: Found ${existingFakeUsers.length} existing fake users.`);
-		console.log('   The seed script will create additional fake users.');
-		console.log('   If you want to start fresh, delete existing fake users first.\n');
-	}
+	// Also delete associated keys for fake users
+	await prisma.key.deleteMany({
+		where: {
+			providerUserId: { startsWith: 'fake_' }
+		}
+	});
 
-	// Create 30 fake women
-	const womenCreated = await createFakeUsers('female', 30);
+	// Create 2 fake women
+	const womenCreated = await createFakeUsers('female', 2);
 
-	// Create 30 fake men
-	const menCreated = await createFakeUsers('male', 30);
+	// Create 2 fake men
+	const menCreated = await createFakeUsers('male', 2);
 
 	console.log('\n' + '='.repeat(50));
 	console.log(`✅ Seed completed successfully!`);
