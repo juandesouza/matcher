@@ -11,7 +11,33 @@ $: void data;
 	let password = '';
 	let showPassword = false;
 	let isLoading = false;
+	let isTestUserLoading = false;
 	let error = '';
+	
+	async function handleTestUserLogin() {
+		isTestUserLoading = true;
+		error = '';
+		
+		try {
+			const response = await fetch('/api/auth/test-user', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' }
+			});
+			
+			const data = await response.json();
+			
+			if (response.ok) {
+				goto('/');
+			} else {
+				error = data.error || 'Failed to create test user';
+			}
+		} catch (err) {
+			console.error('Test user login error:', err);
+			error = 'Network error. Please try again.';
+		} finally {
+			isTestUserLoading = false;
+		}
+	}
 	
 	/**
 	 * @param {SubmitEvent} e
@@ -157,6 +183,33 @@ $: void data;
 					</svg>
 					{$_('auth.loginWithGoogle')}
 				</a>
+			</div>
+			
+			<div class="mt-6">
+				<div class="relative">
+					<div class="absolute inset-0 flex items-center">
+						<div class="w-full border-t border-gray-700"></div>
+					</div>
+					<div class="relative flex justify-center text-sm">
+						<span class="px-2 bg-card-dark text-text-light/60">Or</span>
+					</div>
+				</div>
+				
+				<Button
+					type="button"
+					disabled={isTestUserLoading}
+					on:click={handleTestUserLogin}
+					class="mt-4 w-full border-gray-500 bg-gray-800 hover:bg-gray-700"
+				>
+					{#if isTestUserLoading}
+						<Loader2 class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 animate-spin text-white" />
+					{:else}
+						Enter as Test User
+					{/if}
+				</Button>
+				<p class="mt-2 text-center text-xs text-text-light/50">
+					Explore the app without signing up. Data will be deleted after 24 hours.
+				</p>
 			</div>
 			
 			<p class="mt-6 text-center text-sm text-text-light/60">

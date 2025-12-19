@@ -95,6 +95,10 @@ export const auth = {
       method: 'POST',
       body: { email, password },
     }),
+  testUser: () =>
+    apiRequest('/api/auth/test-user', {
+      method: 'POST',
+    }),
   logout: () => apiRequest('/api/auth/logout', { method: 'POST' }),
   check: () => apiRequest('/api/auth/check'),
   forgotPassword: (email: string) =>

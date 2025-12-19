@@ -22,6 +22,7 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTestUserLoading, setIsTestUserLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Listen for deep links (for OAuth callback from backend redirect)
@@ -125,6 +126,23 @@ export const LoginScreen = () => {
       Alert.alert('Login Error', error.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleTestUserLogin = async () => {
+    try {
+      setIsTestUserLoading(true);
+      setError('');
+      await auth.testUser();
+      
+      // Test user always has complete profile, navigate to main app
+      navigation.navigate('Main' as never);
+    } catch (error: any) {
+      console.error('Test user login error:', error);
+      setError(error.message || 'Failed to create test user');
+      Alert.alert('Test User Error', error.message || 'Failed to create test user');
+    } finally {
+      setIsTestUserLoading(false);
     }
   };
 
@@ -285,6 +303,29 @@ export const LoginScreen = () => {
       color: colors.crimsonPulse.reactNative,
       fontSize: parseFontSize(typography.fontSizes.sm),
     },
+    testUserButton: {
+      backgroundColor: colors.card.reactNative,
+      borderRadius: parseSpacing(borderRadius.lg),
+      padding: parseSpacing(spacing.md),
+      alignItems: 'center',
+      marginTop: parseSpacing(spacing.md),
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colors.border.reactNative,
+    },
+    testUserButtonText: {
+      color: colors.text.reactNative,
+      fontSize: parseFontSize(typography.fontSizes.base),
+      fontWeight: typography.fontWeights.medium.toString() as any,
+    },
+    testUserHint: {
+      color: colors.text.reactNative + '80',
+      fontSize: parseFontSize(typography.fontSizes.xs),
+      textAlign: 'center',
+      marginTop: parseSpacing(spacing.xs),
+      marginBottom: parseSpacing(spacing.sm),
+      paddingHorizontal: parseSpacing(spacing.md),
+    },
   });
 
   return (
@@ -356,6 +397,30 @@ export const LoginScreen = () => {
       >
         <Text style={styles.googleButtonText}>Continue with Google</Text>
       </TouchableOpacity>
+      
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>OR</Text>
+        <View style={styles.dividerLine} />
+      </View>
+      
+      <TouchableOpacity
+        style={[styles.testUserButton, isTestUserLoading && styles.buttonDisabled]}
+        onPress={handleTestUserLogin}
+        disabled={isTestUserLoading}
+      >
+        {isTestUserLoading ? (
+          <View style={styles.buttonLoading}>
+            <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.testUserButtonText}>Creating test account...</Text>
+          </View>
+        ) : (
+          <Text style={styles.testUserButtonText}>Enter as Test User</Text>
+        )}
+      </TouchableOpacity>
+      <Text style={styles.testUserHint}>
+        Explore the app without signing up. Data will be deleted after 24 hours.
+      </Text>
       
       <TouchableOpacity
         style={styles.link}
