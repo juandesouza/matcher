@@ -8,17 +8,13 @@ const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Find project root (web/) - go up from web/src/routes/api/admin/seed-once/+server.js
-let projectRoot = process.cwd();
-if (__dirname.includes('src/routes')) {
-	// Development mode
-	projectRoot = join(__dirname, '../../../../../../');
-} else if (__dirname.includes('build')) {
-	// Production build
-	projectRoot = join(__dirname, '../../../..');
-}
-
+// Find project root (web/) - use process.cwd() which should be the web/ directory
+// In production on Render, process.cwd() is the web/ directory
+const projectRoot = process.cwd();
 const seedScriptPath = join(projectRoot, 'prisma/seed.js');
+
+console.log('[Admin Seed Once] Project root:', projectRoot);
+console.log('[Admin Seed Once] Seed script path:', seedScriptPath);
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
