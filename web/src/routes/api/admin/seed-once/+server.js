@@ -24,6 +24,14 @@ export async function POST({ request }) {
 		console.log('[Admin Seed Once] Starting database seed (one-time, no auth)...');
 		console.log('[Admin Seed Once] Working directory:', projectRoot);
 		
+		// Generate Prisma client first, then run seed
+		console.log('[Admin Seed Once] Generating Prisma client...');
+		await execAsync(`npx prisma generate`, {
+			cwd: projectRoot,
+			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
+		});
+		
+		console.log('[Admin Seed Once] Running seed script...');
 		// Use npx prisma db seed which handles paths automatically
 		const { stdout, stderr } = await execAsync(`npx prisma db seed`, {
 			cwd: projectRoot,
