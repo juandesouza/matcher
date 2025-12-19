@@ -26,17 +26,16 @@ export async function POST({ request }) {
 		
 		// Run migrations first to ensure tables exist
 		console.log('[Admin Seed Once] Running database migrations...');
-		try {
-			await execAsync(`npx prisma migrate deploy`, {
-				cwd: projectRoot,
-				env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
-				timeout: 60000
-			});
-			console.log('[Admin Seed Once] Migrations completed.');
-		} catch (error) {
-			console.log('[Admin Seed Once] Migration warning:', error.message);
-			// Continue anyway - tables might already exist
+		const migrationResult = await execAsync(`npx prisma migrate deploy`, {
+			cwd: projectRoot,
+			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+			timeout: 120000 // 2 minute timeout for migrations
+		});
+		console.log('[Admin Seed Once] Migration output:', migrationResult.stdout);
+		if (migrationResult.stderr) {
+			console.log('[Admin Seed Once] Migration stderr:', migrationResult.stderr);
 		}
+		console.log('[Admin Seed Once] Migrations completed.');
 		
 		// Run the seed script
 		console.log('[Admin Seed Once] Running seed script...');
