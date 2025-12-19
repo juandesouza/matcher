@@ -19,7 +19,6 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
 	},
 	"devDependencies": {
-		"@prisma/client": "^6.19.0",
 		"@sveltejs/adapter-node": "^5.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -34,6 +33,7 @@
 		"seed": "node prisma/seed.js"
 	},
 	"dependencies": {
+		"@prisma/client": "^6.19.0",
 		"@lucia-auth/adapter-postgresql": "^3.1.2",
 		"@skeletonlabs/skeleton": "^2.8.0",
 		"@skeletonlabs/tw-plugin": "^0.3.0",
