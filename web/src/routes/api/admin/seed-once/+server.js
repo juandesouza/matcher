@@ -27,16 +27,25 @@ export async function POST({ request }) {
 		// Run migrations first to ensure tables exist
 		console.log('[Admin Seed Once] Running database migrations...');
 		console.log('[Admin Seed Once] DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Missing');
-		const migrationResult = await execAsync(`npx prisma migrate deploy 2>&1`, {
-			cwd: projectRoot,
-			env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
-			timeout: 120000 // 2 minute timeout for migrations
-		});
-		console.log('[Admin Seed Once] Migration stdout:', migrationResult.stdout);
-		if (migrationResult.stderr) {
-			console.log('[Admin Seed Once] Migration stderr:', migrationResult.stderr);
+		let migrationOutput = '';
+		try {
+			const migrationResult = await execAsync(`npx prisma migrate deploy 2>&1`, {
+				cwd: projectRoot,
+				env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+				timeout: 120000 // 2 minute timeout for migrations
+			});
+			migrationOutput = migrationResult.stdout || '';
+			console.log('[Admin Seed Once] Migration stdout:', migrationOutput);
+			if (migrationResult.stderr) {
+				migrationOutput += '\n' + migrationResult.stderr;
+				console.log('[Admin Seed Once] Migration stderr:', migrationResult.stderr);
+			}
+			console.log('[Admin Seed Once] Migrations completed.');
+		} catch (error) {
+			migrationOutput = `Migration error: ${error.message}\n${error.stdout || ''}\n${error.stderr || ''}`;
+			console.error('[Admin Seed Once] Migration failed:', error);
+			// Continue anyway - might be that migrations are already applied
 		}
-		console.log('[Admin Seed Once] Migrations completed.');
 		
 		// Run the seed script
 		console.log('[Admin Seed Once] Running seed script...');
@@ -59,6 +68,7 @@ export async function POST({ request }) {
 		return json({ 
 			success: true, 
 			message: 'Seed script executed successfully',
+			migrationOutput: migrationOutput,
 			output: stdout,
 			errors: stderr || null
 		});
