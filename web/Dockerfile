@@ -27,8 +27,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies (including @prisma/client which is needed for seed)
+RUN npm ci --only=production && npm install @prisma/client
 
 # Copy built application
 COPY --from=builder /app/build ./build
