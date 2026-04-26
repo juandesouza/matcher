@@ -86,7 +86,7 @@ export async function GET({ url, request }) {
 	
 	// For mobile, use the ngrok URL as redirect URI (Google requires HTTP/HTTPS)
 	// The backend callback will then redirect to the deep link
-	const redirectUri = `${serverOrigin}/api/auth/google/callback`;
+	const redirectUri = `${serverOrigin}/api/auth/google/callback?mobile=true`;
 	const scopes = env.GOOGLE_SCOPES ?? 'openid email profile';
 	
 	console.log('[Google OAuth Mobile] Using ngrok URL as redirect URI:', redirectUri);

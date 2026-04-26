@@ -6,6 +6,8 @@ import { env } from '$env/dynamic/private';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url, cookies }) {
+	const isMobileFlow = url.searchParams.get('mobile') === 'true';
+
 	// Log immediately to help debug
 	console.log('[Google OAuth Callback] Received callback request at:', new Date().toISOString());
 	console.log('[Google OAuth Callback] Full URL:', url.toString());
@@ -24,35 +26,36 @@ export async function GET({ url, cookies }) {
 
 	if (error) {
 		console.error('Google OAuth error:', error);
-		// Check if this is a mobile request (from ngrok)
-		// Redirect to deep link with error
-		const deepLinkUrl = `matcher://auth/callback?error=${encodeURIComponent(error)}`;
-		return new Response(null, {
-			status: 302,
-			headers: { 'Location': deepLinkUrl }
-		});
+		if (isMobileFlow) {
+			const deepLinkUrl = `matcher://auth/callback?error=${encodeURIComponent(error)}`;
+			return new Response(null, {
+				status: 302,
+				headers: { 'Location': deepLinkUrl }
+			});
+		}
+		throw redirect(302, `/auth/login?error=${encodeURIComponent(error)}`);
 	}
 
 	if (!code) {
 		console.error('Google OAuth callback: No code parameter');
-		// Redirect to deep link with error
-		const deepLinkUrl = 'matcher://auth/callback?error=no_code';
-		return new Response(null, {
-			status: 302,
-			headers: { 'Location': deepLinkUrl }
-		});
+		if (isMobileFlow) {
+			const deepLinkUrl = 'matcher://auth/callback?error=no_code';
+			return new Response(null, {
+				status: 302,
+				headers: { 'Location': deepLinkUrl }
+			});
+		}
+		throw redirect(302, '/auth/login?error=no_code');
 	}
 
 	console.log('[Google OAuth Callback] Code received, exchanging for token...');
 
 	const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
 	const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
-	// CRITICAL: The redirect_uri MUST match exactly what was used in the authorization request
-	// For mobile, the redirect_uri might include ?mobile=true, so we need to strip that for the token exchange
-	// but keep the base URL
-	const baseRedirectUri = env.GOOGLE_REDIRECT_URI ?? `${url.origin}/api/auth/google/callback`;
-	// Remove query params from redirect_uri for token exchange (Google doesn't include them in the actual redirect)
-	const GOOGLE_REDIRECT_URI = baseRedirectUri.split('?')[0];
+	const requestRedirectUri = `${url.origin}/api/auth/google/callback${isMobileFlow ? '?mobile=true' : ''}`;
+	const GOOGLE_REDIRECT_URI = isMobileFlow
+		? requestRedirectUri
+		: (env.GOOGLE_REDIRECT_URI ?? requestRedirectUri).split('?')[0];
 
 	console.log('[Google OAuth Callback] Config check:', {
 		hasClientId: !!GOOGLE_CLIENT_ID,
@@ -218,17 +221,17 @@ export async function GET({ url, cookies }) {
 			...sessionCookie.attributes
 		});
 
-		// For mobile OAuth, redirect to deep link with the OAuth code
-		// This allows the app to receive the code via deep link and process it
-		const deepLinkUrl = `matcher://auth/callback?code=${encodeURIComponent(code)}`;
-		
-		// Use HTTP 302 redirect - the app's Linking API will catch this
-		return new Response(null, {
-			status: 302,
-			headers: {
-				'Location': deepLinkUrl
-			}
-		});
+		if (isMobileFlow) {
+			const deepLinkUrl = `matcher://auth/callback?code=${encodeURIComponent(code)}`;
+			return new Response(null, {
+				status: 302,
+				headers: {
+					'Location': deepLinkUrl
+				}
+			});
+		}
+
+		throw redirect(302, '/');
 	} catch (error) {
 		console.error('Google OAuth callback error:', error);
 		console.error('Error stack:', error.stack);
