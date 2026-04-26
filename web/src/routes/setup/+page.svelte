@@ -15,6 +15,7 @@
 	/** @type {string | null} */
 	let profilePicturePreview = null;
 	let isLoading = false;
+	let uploadProgress = 0;
 	let error = '';
 	let locationStatus = 'Getting location...';
 	/** @type {{ lat: number; lng: number } | null} */
@@ -81,6 +82,45 @@
 		reader.readAsDataURL(file);
 		error = '';
 	}
+
+	/**
+	 * Upload photo with progress feedback for the user.
+	 * @param {File} file
+	 * @returns {Promise<string>}
+	 */
+	function uploadPhotoWithProgress(file) {
+		return new Promise((resolve, reject) => {
+			const formData = new FormData();
+			formData.append('photo', file);
+
+			const xhr = new XMLHttpRequest();
+			xhr.open('POST', '/api/upload/photo');
+			xhr.responseType = 'json';
+
+			xhr.upload.onprogress = (e) => {
+				if (!e.lengthComputable) return;
+				uploadProgress = Math.round((e.loaded / e.total) * 100);
+			};
+
+			xhr.onload = () => {
+				const payload = xhr.response || {};
+				if (xhr.status >= 200 && xhr.status < 300 && payload.photoUrl) {
+					resolve(payload.photoUrl);
+					return;
+				}
+
+				const message =
+					payload.error ||
+					(xhr.status >= 200 && xhr.status < 300
+						? 'Photo upload response is missing photoUrl'
+						: 'Failed to upload photo');
+				reject(new Error(message));
+			};
+
+			xhr.onerror = () => reject(new Error('Network error while uploading photo'));
+			xhr.send(formData);
+		});
+	}
 	
 	/**
 	 * @param {SubmitEvent} event
@@ -115,23 +155,11 @@
 		}
 		
 		isLoading = true;
+		uploadProgress = 0;
 		
 		try {
-			// Upload profile picture
-			const formData = new FormData();
-			formData.append('photo', profilePicture);
-			
-			const uploadResponse = await fetch('/api/upload/photo', {
-				method: 'POST',
-				body: formData
-			});
-			
-			if (!uploadResponse.ok) {
-				const errorData = await uploadResponse.json();
-				throw new Error(errorData.error || 'Failed to upload photo');
-			}
-			
-			const { photoUrl } = await uploadResponse.json();
+			// Upload profile picture with progress feedback
+			const photoUrl = await uploadPhotoWithProgress(profilePicture);
 			
 			// Update user profile
 			const updateResponse = await fetch('/api/setup', {
@@ -159,6 +187,7 @@
 			error = err instanceof Error ? err.message : 'Failed to complete setup. Please try again.';
 		} finally {
 			isLoading = false;
+			uploadProgress = 0;
 		}
 	}
 </script>
@@ -259,6 +288,11 @@
 								/>
 							</div>
 						{/if}
+						{#if profilePicture}
+							<p class="text-center text-xs text-text-light/60">
+								Selected: {profilePicture.name}
+							</p>
+						{/if}
 						
 						<label
 							for="photo-input"
@@ -282,7 +316,25 @@
 					</div>
 				</div>
 				
-				<Button type="submit" disabled={isLoading || !location} class="w-full border-white">
+				{#if isLoading}
+					<div class="space-y-2">
+						<div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+							<div
+								class="h-full bg-crimson-pulse transition-all duration-150"
+								style={`width: ${uploadProgress}%`}
+							></div>
+						</div>
+						<p class="text-xs text-text-light/60 text-center">
+							Uploading photo... {uploadProgress}%
+						</p>
+					</div>
+				{/if}
+
+				<Button
+					type="submit"
+					disabled={isLoading || !location || !profilePicture}
+					className="w-full border-white text-base font-semibold shadow-lg"
+				>
 					{#if isLoading}
 						<Loader2 class="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 animate-spin text-white" />
 					{:else}
