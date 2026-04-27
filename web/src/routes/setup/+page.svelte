@@ -12,8 +12,8 @@
 	let bio = '';
 	/** @type {File | null} */
 	let profilePicture = null;
-	/** @type {FileList | null} */
-	let selectedFiles = null;
+	/** @type {HTMLInputElement | null} */
+	let photoInput = null;
 	/** @type {string | null} */
 	let profilePicturePreview = null;
 	let isLoading = false;
@@ -85,31 +85,6 @@
 		error = '';
 	}
 
-	$: {
-		const file = selectedFiles?.[0] ?? null;
-		if (!file) {
-			profilePicture = null;
-			profilePicturePreview = null;
-		} else {
-			if (!file.type.startsWith('image/')) {
-				error = 'Please select an image file';
-			} else if (file.size > 5 * 1024 * 1024) {
-				error = 'Image must be less than 5MB';
-			} else {
-				profilePicture = file;
-				error = '';
-				const reader = new FileReader();
-				reader.onload = (e) => {
-					const result = e.target?.result;
-					if (typeof result === 'string') {
-						profilePicturePreview = result;
-					}
-				};
-				reader.readAsDataURL(file);
-			}
-		}
-	}
-
 	/**
 	 * Upload photo with progress feedback for the user.
 	 * @param {File} file
@@ -169,6 +144,14 @@
 		if (!bio || bio.length > 50) {
 			error = 'Bio is required and must be 50 characters or less';
 			return;
+		}
+
+		// Fallback to input file list if state was not updated for any reason.
+		if (!profilePicture && photoInput?.files?.[0]) {
+			const fallbackFile = photoInput.files[0];
+			if (fallbackFile.type.startsWith('image/') && fallbackFile.size <= 5 * 1024 * 1024) {
+				profilePicture = fallbackFile;
+			}
 		}
 		
 		if (!profilePicture) {
@@ -333,10 +316,10 @@
 								<p class="text-xs text-text-light/60 mt-1">PNG, JPG up to 5MB</p>
 							</div>
 							<input
+								bind:this={photoInput}
 								id="photo-input"
 								type="file"
 								accept="image/*"
-								bind:files={selectedFiles}
 								on:change={handleFileSelect}
 								class="hidden"
 							/>
