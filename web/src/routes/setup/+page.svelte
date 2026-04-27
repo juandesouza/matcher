@@ -12,6 +12,8 @@
 	let bio = '';
 	/** @type {File | null} */
 	let profilePicture = null;
+	/** @type {FileList | null} */
+	let selectedFiles = null;
 	/** @type {string | null} */
 	let profilePicturePreview = null;
 	let isLoading = false;
@@ -81,6 +83,31 @@
 		};
 		reader.readAsDataURL(file);
 		error = '';
+	}
+
+	$: {
+		const file = selectedFiles?.[0] ?? null;
+		if (!file) {
+			profilePicture = null;
+			profilePicturePreview = null;
+		} else {
+			if (!file.type.startsWith('image/')) {
+				error = 'Please select an image file';
+			} else if (file.size > 5 * 1024 * 1024) {
+				error = 'Image must be less than 5MB';
+			} else {
+				profilePicture = file;
+				error = '';
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const result = e.target?.result;
+					if (typeof result === 'string') {
+						profilePicturePreview = result;
+					}
+				};
+				reader.readAsDataURL(file);
+			}
+		}
 	}
 
 	/**
@@ -309,6 +336,7 @@
 								id="photo-input"
 								type="file"
 								accept="image/*"
+								bind:files={selectedFiles}
 								on:change={handleFileSelect}
 								class="hidden"
 							/>
@@ -332,7 +360,7 @@
 
 				<Button
 					type="submit"
-					disabled={isLoading || !location || !profilePicture}
+					disabled={isLoading}
 					className="w-full border-white text-base font-semibold shadow-lg"
 				>
 					{#if isLoading}
