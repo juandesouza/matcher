@@ -53,6 +53,15 @@
 			}
 		);
 	}
+
+	/**
+	 * Some mobile browsers may not set MIME type reliably.
+	 * @param {File} file
+	 */
+	function isLikelyImage(file) {
+		if (file.type?.startsWith('image/')) return true;
+		return /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(file.name);
+	}
 	
 	/**
 	 * @param {Event} event
@@ -63,7 +72,7 @@
 		const file = target.files?.[0];
 		if (!file) return;
 		
-		if (!file.type.startsWith('image/')) {
+		if (!isLikelyImage(file)) {
 			error = 'Please select an image file';
 			return;
 		}
@@ -149,7 +158,7 @@
 		// Fallback to input file list if state was not updated for any reason.
 		if (!profilePicture && photoInput?.files?.[0]) {
 			const fallbackFile = photoInput.files[0];
-			if (fallbackFile.type.startsWith('image/') && fallbackFile.size <= 5 * 1024 * 1024) {
+			if (isLikelyImage(fallbackFile) && fallbackFile.size <= 5 * 1024 * 1024) {
 				profilePicture = fallbackFile;
 			}
 		}
@@ -206,14 +215,14 @@
 	<title>Complete Your Profile - Matcher</title>
 </svelte:head>
 
-<div class="min-h-screen bg-bg-dark flex items-center justify-center p-4">
-	<div class="w-full max-w-md">
+<div class="h-screen overflow-y-auto bg-bg-dark p-4">
+	<div class="w-full max-w-md mx-auto py-4">
 		<div class="text-center mb-8">
 			<h1 class="text-4xl font-bold text-text-light mb-2">Complete Your Profile</h1>
 			<p class="text-text-light/60">Tell us about yourself to start matching</p>
 		</div>
 		
-		<div class="card p-6">
+		<div class="card p-6 max-h-[calc(100vh-2rem)] overflow-y-auto">
 			<form on:submit={handleSubmit} class="space-y-6">
 				{#if error}
 					<div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
@@ -321,7 +330,7 @@
 								type="file"
 								accept="image/*"
 								on:change={handleFileSelect}
-								class="hidden"
+								class="sr-only"
 							/>
 						</label>
 					</div>
