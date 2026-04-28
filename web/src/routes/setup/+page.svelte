@@ -124,11 +124,16 @@
 					return;
 				}
 
-				const message =
-					payload.error ||
-					(xhr.status >= 200 && xhr.status < 300
-						? 'Photo upload response is missing photoUrl'
-						: 'Failed to upload photo');
+				let message = payload.error;
+				if (!message && xhr.responseType !== 'json') {
+					message = `Upload failed with status ${xhr.status}`;
+				}
+				if (!message && xhr.status >= 200 && xhr.status < 300) {
+					message = 'Photo upload response is missing photoUrl';
+				}
+				if (!message) {
+					message = `Failed to upload photo (status ${xhr.status})`;
+				}
 				reject(new Error(message));
 			};
 

@@ -14,22 +14,32 @@ function isLikelyImage(file) {
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, cookies }) {
-	const user = await requireAuth(cookies);
+	const user = await requireAuth(cookies, true);
 	
 	try {
 		const formData = await request.formData();
 		const file = formData.get('photo');
 		
-		if (!file || !(file instanceof File)) {
+		const isFileLike =
+			file &&
+			typeof file === 'object' &&
+			'name' in file &&
+			'size' in file &&
+			'type' in file &&
+			'arrayBuffer' in file;
+
+		if (!isFileLike) {
 			return json({ error: 'No file provided' }, { status: 400 });
 		}
 		
 		// Validate file type (mobile browsers may omit MIME type)
+		// @ts-ignore - validated by isFileLike guard above
 		if (!isLikelyImage(file)) {
 			return json({ error: 'File must be an image' }, { status: 400 });
 		}
 		
 		// Validate file size (5MB limit)
+		// @ts-ignore - validated by isFileLike guard above
 		if (file.size > 5 * 1024 * 1024) {
 			return json({ error: 'File must be less than 5MB' }, { status: 400 });
 		}
@@ -39,11 +49,13 @@ export async function POST({ request, cookies }) {
 		await mkdir(uploadsDir, { recursive: true });
 		
 		// Generate unique filename
+		// @ts-ignore - validated by isFileLike guard above
 		const fileExt = file.name.split('.').pop();
 		const filename = `${randomUUID()}.${fileExt}`;
 		const filepath = join(uploadsDir, filename);
 		
 		// Save file
+		// @ts-ignore - validated by isFileLike guard above
 		const arrayBuffer = await file.arrayBuffer();
 		await writeFile(filepath, Buffer.from(arrayBuffer));
 		
@@ -53,6 +65,12 @@ export async function POST({ request, cookies }) {
 		return json({ photoUrl });
 	} catch (error) {
 		console.error('Upload error:', error);
+		if (error?.code === 'EROFS' || error?.code === 'EACCES') {
+			return json({ error: 'Server cannot write uploaded files right now' }, { status: 500 });
+		}
+		if (error?.status === 401) {
+			return json({ error: 'Session expired. Please log in again.' }, { status: 401 });
+		}
 		return json({ error: 'Failed to upload photo' }, { status: 500 });
 	}
 }
