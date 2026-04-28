@@ -4,6 +4,14 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
+/**
+ * @param {File} file
+ */
+function isLikelyImage(file) {
+	if (file.type?.startsWith('image/')) return true;
+	return /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(file.name);
+}
+
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, cookies }) {
 	const user = await requireAuth(cookies);
@@ -16,8 +24,8 @@ export async function POST({ request, cookies }) {
 			return json({ error: 'No file provided' }, { status: 400 });
 		}
 		
-		// Validate file type
-		if (!file.type.startsWith('image/')) {
+		// Validate file type (mobile browsers may omit MIME type)
+		if (!isLikelyImage(file)) {
 			return json({ error: 'File must be an image' }, { status: 400 });
 		}
 		

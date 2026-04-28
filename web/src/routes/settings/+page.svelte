@@ -4,7 +4,7 @@
 	import { theme } from '$lib/stores/theme';
 	import { localeStore } from '$lib/stores/locale';
 	import { locale, _ } from 'svelte-i18n';
-	import { Moon, Sun, DollarSign, LogOut, Globe, User } from 'lucide-svelte';
+	import { Moon, Sun, DollarSign, LogOut, Globe, User, Trash2 } from 'lucide-svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { goto } from '$app/navigation';
 	
@@ -205,6 +205,26 @@
 		await fetch('/api/auth/logout', { method: 'POST' });
 		window.location.href = '/auth/login';
 	}
+
+	async function handleDeleteAccount() {
+		const confirmed = window.confirm(
+			'Are you sure you want to permanently delete your account? This cannot be undone.'
+		);
+		if (!confirmed) return;
+
+		try {
+			const response = await fetch('/api/auth/delete-account', { method: 'POST' });
+			const payload = await response.json().catch(() => ({}));
+			if (!response.ok) {
+				alert(payload.error || 'Failed to delete account. Please try again.');
+				return;
+			}
+			window.location.href = '/auth/signup';
+		} catch (error) {
+			console.error('Delete account request failed:', error);
+			alert('Failed to delete account. Please try again.');
+		}
+	}
 </script>
 
 <svelte:head>
@@ -361,6 +381,14 @@
 			>
 				<LogOut size={20} />
 				{$_('auth.logout')}
+			</button>
+
+			<button
+				class="btn-rounded bg-transparent border border-red-500 text-red-400 hover:bg-red-500/10 px-6 py-3 w-full flex items-center justify-center gap-2"
+				on:click={handleDeleteAccount}
+			>
+				<Trash2 size={20} />
+				Delete Account
 			</button>
 		</div>
 	</div>

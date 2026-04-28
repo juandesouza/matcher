@@ -14,6 +14,8 @@
 	let profilePicture = null;
 	/** @type {HTMLInputElement | null} */
 	let photoInput = null;
+	/** @type {HTMLInputElement | null} */
+	let photoInputDesktop = null;
 	/** @type {string | null} */
 	let profilePicturePreview = null;
 	let isLoading = false;
@@ -67,8 +69,8 @@
 	 * @param {Event} event
 	 */
 	function handleFileSelect(event) {
-		const target = event.target;
-		if (!(target instanceof HTMLInputElement)) return;
+		const target = /** @type {HTMLInputElement | null} */ (event.currentTarget || event.target);
+		if (!target) return;
 		const file = target.files?.[0];
 		if (!file) return;
 		
@@ -92,6 +94,10 @@
 		};
 		reader.readAsDataURL(file);
 		error = '';
+	}
+
+	function openPhotoPicker() {
+		photoInput?.click();
 	}
 
 	/**
@@ -156,8 +162,8 @@
 		}
 
 		// Fallback to input file list if state was not updated for any reason.
-		if (!profilePicture && photoInput?.files?.[0]) {
-			const fallbackFile = photoInput.files[0];
+		const fallbackFile = photoInput?.files?.[0] ?? photoInputDesktop?.files?.[0] ?? null;
+		if (!profilePicture && fallbackFile) {
 			if (isLikelyImage(fallbackFile) && fallbackFile.size <= 5 * 1024 * 1024) {
 				profilePicture = fallbackFile;
 			}
@@ -312,10 +318,30 @@
 								Selected: {profilePicture.name}
 							</p>
 						{/if}
-						
+
+						<button
+							type="button"
+							class="w-full btn-rounded bg-gray-800 hover:bg-gray-700 text-text-light border border-gray-600 py-3 flex items-center justify-center gap-2 md:hidden"
+							on:click={openPhotoPicker}
+						>
+							<Upload size={18} />
+							Choose Photo
+						</button>
+
+						<div class="w-full md:hidden">
+							<input
+								bind:this={photoInput}
+								id="photo-input"
+								type="file"
+								accept="image/*"
+								on:change={handleFileSelect}
+								class="w-full text-sm text-text-light file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-crimson-pulse file:text-white bg-gray-800 rounded-lg p-2"
+							/>
+						</div>
+
 						<label
-							for="photo-input"
-							class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-crimson-pulse transition-colors"
+							for="photo-input-desktop"
+							class="hidden md:flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-crimson-pulse transition-colors"
 						>
 							<div class="flex flex-col items-center justify-center pt-5 pb-6">
 								<Upload class="text-text-light/60 mb-2" size={24} />
@@ -325,8 +351,8 @@
 								<p class="text-xs text-text-light/60 mt-1">PNG, JPG up to 5MB</p>
 							</div>
 							<input
-								bind:this={photoInput}
-								id="photo-input"
+								bind:this={photoInputDesktop}
+								id="photo-input-desktop"
 								type="file"
 								accept="image/*"
 								on:change={handleFileSelect}
