@@ -103,8 +103,11 @@
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
-						ageRange,
-						distanceRange,
+						ageRange: {
+							min: Number(ageRange.min),
+							max: Number(ageRange.max)
+						},
+						distanceRange: Number(distanceRange),
 						locale: selectedLocale,
 						theme: currentTheme
 					})

@@ -204,9 +204,9 @@
 				throw new Error(errorData.error || 'Failed to update profile');
 			}
 			
-			// Invalidate layout data and redirect to home
-			await fetch('/api/auth/check'); // Refresh session data
-			window.location.href = '/'; // Force full page reload to refresh layout data
+			// Redirect immediately after successful setup.
+			// Extra network calls here can fail/hang on mobile browsers.
+			window.location.href = '/';
 		} catch (err) {
 			console.error('Setup error:', err);
 			error = err instanceof Error ? err.message : 'Failed to complete setup. Please try again.';
