@@ -57,12 +57,25 @@ export async function POST({ request, cookies }) {
 		}
 		
 		// Update user profile
-		await db.user.update({
+		const updatedUser = await db.user.update({
 			where: { id: user.id },
-			data: updateData
+			data: updateData,
+			select: {
+				age: true,
+				gender: true,
+				bio: true,
+				photos: true
+			}
 		});
-		
-		return json({ success: true });
+
+		const profileComplete =
+			!!updatedUser.age &&
+			!!updatedUser.gender &&
+			!!updatedUser.bio &&
+			Array.isArray(updatedUser.photos) &&
+			updatedUser.photos.length > 0;
+
+		return json({ success: true, profileComplete });
 	} catch (error) {
 		console.error('Setup error:', error);
 		return json({ error: 'Failed to update profile' }, { status: 500 });
