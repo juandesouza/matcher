@@ -15,8 +15,10 @@ function isLikelyImage(file) {
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, cookies }) {
 	const user = await requireAuth(cookies, true);
+	let stage = 'init';
 	
 	try {
+		stage = 'formdata';
 		const formData = await request.formData();
 		const file = formData.get('photo');
 		
@@ -29,25 +31,27 @@ export async function POST({ request, cookies }) {
 			'arrayBuffer' in file;
 
 		if (!isFileLike) {
-			return json({ error: 'No file provided' }, { status: 400 });
+			return json({ error: 'No file provided', stage }, { status: 400 });
 		}
 		
 		// Validate file type (mobile browsers may omit MIME type)
 		// @ts-ignore - validated by isFileLike guard above
 		if (!isLikelyImage(file)) {
-			return json({ error: 'File must be an image' }, { status: 400 });
+			return json({ error: 'File must be an image', stage, fileType: file.type, fileName: file.name }, { status: 400 });
 		}
 		
 		// Validate file size (5MB limit)
 		// @ts-ignore - validated by isFileLike guard above
 		if (file.size > 5 * 1024 * 1024) {
-			return json({ error: 'File must be less than 5MB' }, { status: 400 });
+			return json({ error: 'File must be less than 5MB', stage, fileSize: file.size }, { status: 400 });
 		}
 		
+		stage = 'mkdir';
 		// Create uploads directory if it doesn't exist
 		const uploadsDir = join(process.cwd(), 'static', 'uploads', 'photos');
 		await mkdir(uploadsDir, { recursive: true });
 		
+		stage = 'write';
 		// Generate unique filename
 		// @ts-ignore - validated by isFileLike guard above
 		const fileExt = file.name.split('.').pop();
@@ -64,14 +68,28 @@ export async function POST({ request, cookies }) {
 		
 		return json({ photoUrl });
 	} catch (error) {
-		console.error('Upload error:', error);
+		console.error('Upload error:', {
+			stage,
+			message: error?.message,
+			code: error?.code,
+			name: error?.name
+		});
 		if (error?.code === 'EROFS' || error?.code === 'EACCES') {
-			return json({ error: 'Server cannot write uploaded files right now' }, { status: 500 });
+			return json({
+				error: 'Server cannot write uploaded files right now',
+				stage,
+				code: error?.code
+			}, { status: 500 });
 		}
 		if (error?.status === 401) {
-			return json({ error: 'Session expired. Please log in again.' }, { status: 401 });
+			return json({ error: 'Session expired. Please log in again.', stage }, { status: 401 });
 		}
-		return json({ error: 'Failed to upload photo' }, { status: 500 });
+		return json({
+			error: 'Failed to upload photo',
+			stage,
+			code: error?.code || null,
+			message: error?.message || null
+		}, { status: 500 });
 	}
 }
 

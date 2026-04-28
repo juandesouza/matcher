@@ -118,7 +118,15 @@
 			};
 
 			xhr.onload = () => {
-				const payload = xhr.response || {};
+				/** @type {{ error?: string; stage?: string; code?: string; message?: string; photoUrl?: string }} */
+				let payload = xhr.response || {};
+				if ((!payload || typeof payload !== 'object') && xhr.responseText) {
+					try {
+						payload = JSON.parse(xhr.responseText);
+					} catch {
+						payload = {};
+					}
+				}
 				if (xhr.status >= 200 && xhr.status < 300 && payload.photoUrl) {
 					resolve(payload.photoUrl);
 					return;
@@ -133,6 +141,13 @@
 				}
 				if (!message) {
 					message = `Failed to upload photo (status ${xhr.status})`;
+				}
+				const detailBits = [];
+				if (payload.stage) detailBits.push(`stage=${payload.stage}`);
+				if (payload.code) detailBits.push(`code=${payload.code}`);
+				if (payload.message) detailBits.push(`msg=${payload.message}`);
+				if (detailBits.length > 0) {
+					message = `${message} (${detailBits.join(', ')})`;
 				}
 				reject(new Error(message));
 			};
