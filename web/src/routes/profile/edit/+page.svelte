@@ -20,6 +20,7 @@
 	let uploadProgress = 0;
 	let error = '';
 	let success = '';
+	const MAX_UPLOAD_BYTES = 500 * 1024; // keep below upstream 512KB limit
 	
 	onMount(() => {
 		if (data.user) {
@@ -64,6 +65,84 @@
 		reader.readAsDataURL(file);
 		error = '';
 		success = '';
+	}
+
+	function isMobileDevice() {
+		if (typeof navigator === 'undefined') return false;
+		return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+	}
+
+	/**
+	 * @param {File} file
+	 * @param {number} maxDimension
+	 * @param {number} quality
+	 * @returns {Promise<Blob>}
+	 */
+	async function renderCompressedBlob(file, maxDimension, quality) {
+		const dataUrl = await new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result);
+			reader.onerror = () => reject(new Error('Failed to read image for compression'));
+			reader.readAsDataURL(file);
+		});
+
+		if (typeof dataUrl !== 'string') {
+			throw new Error('Invalid image data');
+		}
+
+		const img = await new Promise((resolve, reject) => {
+			const image = new Image();
+			image.onload = () => resolve(image);
+			image.onerror = () => reject(new Error('Failed to decode image'));
+			image.src = dataUrl;
+		});
+
+		const { width, height } = img;
+		const scale = Math.min(1, maxDimension / Math.max(width, height));
+		const targetWidth = Math.max(1, Math.round(width * scale));
+		const targetHeight = Math.max(1, Math.round(height * scale));
+
+		const canvas = document.createElement('canvas');
+		canvas.width = targetWidth;
+		canvas.height = targetHeight;
+		const ctx = canvas.getContext('2d');
+		if (!ctx) throw new Error('Canvas is not supported on this browser');
+		ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+		const blob = await new Promise((resolve) => {
+			canvas.toBlob((b) => resolve(b), 'image/jpeg', quality);
+		});
+
+		if (!blob) throw new Error('Failed to compress image');
+		return blob;
+	}
+
+	/**
+	 * Compress large photos on mobile before upload.
+	 * @param {File} file
+	 * @returns {Promise<File>}
+	 */
+	async function prepareImageForUpload(file) {
+		if (!isMobileDevice() || file.size <= MAX_UPLOAD_BYTES) return file;
+
+		let quality = 0.82;
+		let dimension = 1600;
+		let blob = null;
+
+		for (let attempt = 0; attempt < 7; attempt++) {
+			blob = await renderCompressedBlob(file, dimension, quality);
+			if (blob.size <= MAX_UPLOAD_BYTES) break;
+			quality = Math.max(0.4, quality - 0.08);
+			dimension = Math.max(720, Math.floor(dimension * 0.85));
+		}
+
+		if (!blob || blob.size > MAX_UPLOAD_BYTES) {
+			throw new Error('Could not compress image enough. Please choose a smaller photo.');
+		}
+
+		return new File([blob], `${file.name.replace(/\.[^/.]+$/, '') || 'photo'}.jpg`, {
+			type: 'image/jpeg'
+		});
 	}
 
 	/**
@@ -119,7 +198,8 @@
 
 			// Upload new photo only when user explicitly saves
 			if (profilePicture) {
-				photoUrl = await uploadPhotoWithProgress(profilePicture);
+				const uploadFile = await prepareImageForUpload(profilePicture);
+				photoUrl = await uploadPhotoWithProgress(uploadFile);
 			}
 
 			const updateResponse = await fetch('/api/profile', {
