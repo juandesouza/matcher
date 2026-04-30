@@ -70,7 +70,7 @@ export async function POST({ request, cookies }) {
 		const arrayBuffer = await file.arrayBuffer();
 		await writeFile(filepath, Buffer.from(arrayBuffer));
 		
-		// Return public URL
+		// Return app-served URL (works in dev/prod regardless of static adapter behavior)
 		const photoUrl = `/uploads/photos/${filename}`;
 		
 		return json({ photoUrl });
