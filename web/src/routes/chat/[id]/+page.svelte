@@ -1,7 +1,8 @@
 <script>
 	import { onDestroy } from 'svelte';
 	import { page } from '$app/stores';
-	import { Send, Image as ImageIcon } from 'lucide-svelte';
+	import { Send, Image as ImageIcon, MoreVertical } from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 	import AdSense from '$lib/components/AdSense.svelte';
 	
 	export let data;
@@ -20,6 +21,7 @@
 	/** @type {string | null} */
 	let chatId = null;
 	let fileError = '';
+	let showMenu = false;
 
 	// React to route param changes and initialize chat
 	$: {
@@ -127,6 +129,27 @@
 			console.error('Failed to send message:', error);
 		}
 	}
+
+	async function handleUnmatch() {
+		if (!chatId) return;
+		const confirmed = window.confirm(
+			'Unmatch this user? This will remove the chat and your like, so their card can appear again.'
+		);
+		if (!confirmed) return;
+
+		try {
+			const response = await fetch(`/api/chat/${chatId}/unmatch`, { method: 'POST' });
+			const payload = await response.json().catch(() => ({}));
+			if (!response.ok) {
+				alert(payload.error || 'Failed to unmatch user');
+				return;
+			}
+			goto('/matches');
+		} catch (error) {
+			console.error('Unmatch request failed:', error);
+			alert('Failed to unmatch user');
+		}
+	}
 	
 	/**
 	 * @param {KeyboardEvent} e
@@ -204,17 +227,43 @@
 	<!-- Chat Header -->
 	{#if data && 'otherUser' in data && data.otherUser}
 		<div class="border-b border-gray-300 dark:border-gray-700 p-4 bg-card flex-shrink-0 z-10">
-			<div class="flex items-center gap-3">
-				{#if data.otherUser.photos && data.otherUser.photos[0]}
-					<img
-						src={data.otherUser.photos[0]}
-						alt={data.otherUser.name}
-						class="w-10 h-10 rounded-full object-cover"
-					/>
-				{/if}
-				<div>
-					<h2 class="text-text font-semibold">{data.otherUser.name}</h2>
-					<p class="text-text/60 text-sm">{data.otherUser.age} years old</p>
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					{#if data.otherUser.photos && data.otherUser.photos[0]}
+						<img
+							src={data.otherUser.photos[0]}
+							alt={data.otherUser.name}
+							class="w-10 h-10 rounded-full object-cover"
+						/>
+					{/if}
+					<div>
+						<h2 class="text-text font-semibold">{data.otherUser.name}</h2>
+						<p class="text-text/60 text-sm">{data.otherUser.age} years old</p>
+					</div>
+				</div>
+				<div class="relative">
+					<button
+						type="button"
+						class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+						aria-label="Chat options"
+						on:click={() => (showMenu = !showMenu)}
+					>
+						<MoreVertical size={20} />
+					</button>
+					{#if showMenu}
+						<div class="absolute right-0 mt-2 w-40 bg-card border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-20">
+							<button
+								type="button"
+								class="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+								on:click={() => {
+									showMenu = false;
+									handleUnmatch();
+								}}
+							>
+								Unmatch
+							</button>
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
