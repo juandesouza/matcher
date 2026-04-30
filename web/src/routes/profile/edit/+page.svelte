@@ -11,26 +11,23 @@
 	let age = '';
 	/** @type {File | null} */
 	let profilePicture = null;
+	let selectedFileName = '';
 	/** @type {string | null} */
 	let profilePicturePreview = null;
+	let currentSavedPhoto = null;
+	let imageLoadFailed = false;
 	let isLoading = false;
 	let error = '';
-	let isInitialLoad = true;
-	/** @type {ReturnType<typeof setTimeout> | undefined} */
-	let saveTimeout;
 	
 	onMount(() => {
 		if (data.user) {
 			name = data.user.name || '';
 			age = data.user.age?.toString() || '';
 			if (data.user.photos && data.user.photos[0]) {
-				profilePicturePreview = data.user.photos[0];
+				currentSavedPhoto = data.user.photos[0];
+				profilePicturePreview = currentSavedPhoto;
 			}
 		}
-		// Mark initial load as complete after a short delay
-		setTimeout(() => {
-			isInitialLoad = false;
-		}, 1000);
 	});
 	
 	/**
@@ -53,6 +50,8 @@
 		}
 		
 		profilePicture = file;
+		selectedFileName = file.name;
+		imageLoadFailed = false;
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const result = e.target?.result;
@@ -62,82 +61,70 @@
 		};
 		reader.readAsDataURL(file);
 		error = '';
-		
-		// Auto-save when photo is selected
-		if (!isInitialLoad) {
-			autoSaveProfile();
-		}
 	}
 	
-	// Auto-save profile (debounced)
-	async function autoSaveProfile() {
-		// Don't auto-save during initial load
-		if (isInitialLoad) return;
-		
-		// Validate before saving
+	async function handleSaveProfile() {
 		if (!name || name.trim().length === 0) {
+			error = 'Name is required';
 			return;
 		}
 		
 		if (!age || parseInt(age) < 18 || parseInt(age) > 99) {
+			error = 'Age must be between 18 and 99';
 			return;
 		}
-		
-		clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(async () => {
-			isLoading = true;
-			error = '';
-			
-			try {
-				let photoUrl = profilePicturePreview;
-				
-				// Upload new photo if one was selected
-				if (profilePicture) {
-					const formData = new FormData();
-					formData.append('photo', profilePicture);
-					
-					const uploadResponse = await fetch('/api/upload/photo', {
-						method: 'POST',
-						body: formData
-					});
-					
-					if (!uploadResponse.ok) {
-						const errorData = await uploadResponse.json();
-						throw new Error(errorData.error || 'Failed to upload photo');
-					}
-					
-					const { photoUrl: newPhotoUrl } = await uploadResponse.json();
-					photoUrl = newPhotoUrl;
-					profilePicture = null; // Clear after upload
-				}
-				
-				// Update user profile
-				const updateResponse = await fetch('/api/profile', {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						name: name.trim(),
-						age: parseInt(age),
-						photos: photoUrl ? [photoUrl] : data.user?.photos || []
-					})
+
+		isLoading = true;
+		error = '';
+
+		try {
+			let photoUrl = currentSavedPhoto;
+
+			// Upload new photo only when user explicitly saves
+			if (profilePicture) {
+				const formData = new FormData();
+				formData.append('photo', profilePicture);
+
+				const uploadResponse = await fetch('/api/upload/photo', {
+					method: 'POST',
+					body: formData
 				});
-				
-				if (!updateResponse.ok) {
-					const errorData = await updateResponse.json();
-					throw new Error(errorData.error || 'Failed to update profile');
+
+				if (!uploadResponse.ok) {
+					const errorData = await uploadResponse.json().catch(() => ({}));
+					throw new Error(errorData.error || 'Failed to upload photo');
 				}
-			} catch (err) {
-				console.error('Profile auto-save error:', err);
-				error = err instanceof Error ? err.message : 'Failed to save profile. Please try again.';
-			} finally {
-				isLoading = false;
+
+				const { photoUrl: newPhotoUrl } = await uploadResponse.json();
+				photoUrl = newPhotoUrl;
 			}
-		}, 1000); // Debounce: save 1 second after last change (longer for profile to allow typing)
-	}
-	
-	// Auto-save when name or age changes
-	$: if (!isInitialLoad && name && age) {
-		autoSaveProfile();
+
+			const updateResponse = await fetch('/api/profile', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					name: name.trim(),
+					age: parseInt(age),
+					photos: photoUrl ? [photoUrl] : data.user?.photos || []
+				})
+			});
+
+			if (!updateResponse.ok) {
+				const errorData = await updateResponse.json().catch(() => ({}));
+				throw new Error(errorData.error || 'Failed to update profile');
+			}
+
+			currentSavedPhoto = photoUrl;
+			profilePicture = null;
+			selectedFileName = '';
+			imageLoadFailed = false;
+			profilePicturePreview = photoUrl;
+		} catch (err) {
+			console.error('Profile save error:', err);
+			error = err instanceof Error ? err.message : 'Failed to save profile. Please try again.';
+		} finally {
+			isLoading = false;
+		}
 	}
 </script>
 
@@ -210,8 +197,19 @@
 									src={profilePicturePreview}
 									alt="Profile preview"
 									class="w-full h-full object-cover rounded-full border-2 border-crimson-pulse"
+									on:error={() => { imageLoadFailed = true; }}
 								/>
 							</div>
+						{/if}
+						{#if imageLoadFailed}
+							<p class="text-center text-xs text-yellow-400">
+								Could not load current image. Select a new photo and click Save Changes.
+							</p>
+						{/if}
+						{#if selectedFileName}
+							<p class="text-center text-xs text-text-light/70">
+								Selected file: {selectedFileName}
+							</p>
 						{/if}
 						
 						<label
@@ -244,6 +242,14 @@
 					>
 						Back to Settings
 					</button>
+					<Button
+						type="button"
+						className="w-full border-white"
+						disabled={isLoading}
+						on:click={handleSaveProfile}
+					>
+						Save Changes
+					</Button>
 				</div>
 				
 				{#if isLoading}

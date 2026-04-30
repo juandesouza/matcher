@@ -26,6 +26,7 @@ let cardStyle = '';
 	let lastUserId;
 let resetTimer;
 let isDesktop = false;
+let photoLoadFailed = false;
 
 // Treat a card with a special id as an ad card
 $: isAd = user && user.id === '__ad__';
@@ -47,6 +48,7 @@ $: isAd = user && user.id === '__ad__';
 	$: if (user?.id && user.id !== lastUserId) {
 		lastUserId = user.id;
 		currentPhotoIndex = 0;
+		photoLoadFailed = false;
 		resetPosition();
 	}
 
@@ -168,14 +170,23 @@ $: isAd = user && user.id === '__ad__';
 						<AdSense slot="1234567890" format="auto" responsive={true} />
 					</div>
 				{:else if user?.photos && user.photos.length > 0}
-					<img
-						src={user.photos[currentPhotoIndex]}
-						alt="{user?.name}"
-						class="w-full h-full object-cover select-none"
-						loading="lazy"
-						draggable="false"
-						style="pointer-events: none; user-select: none; -webkit-user-drag: none;"
-					/>
+					{#if !photoLoadFailed}
+						<img
+							src={user.photos[currentPhotoIndex]}
+							alt="{user?.name}"
+							class="w-full h-full object-cover select-none"
+							loading="lazy"
+							draggable="false"
+							style="pointer-events: none; user-select: none; -webkit-user-drag: none;"
+							on:error={() => {
+								photoLoadFailed = true;
+							}}
+						/>
+					{:else}
+						<div class="w-full h-full bg-gray-700 flex items-center justify-center">
+							<span class="text-gray-300 text-sm">Photo unavailable</span>
+						</div>
+					{/if}
 					
 					<!-- Photo indicators -->
 					{#if user.photos.length > 1}
