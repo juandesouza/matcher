@@ -27,13 +27,11 @@ export async function POST({ params, cookies }) {
 				where: { id: chat.id }
 			});
 
-			// Remove match records in both directions if present.
+			// Remove only current user's directed match record.
 			await tx.match.deleteMany({
 				where: {
-					OR: [
-						{ userId: user.id, matchedUserId: otherUserId },
-						{ userId: otherUserId, matchedUserId: user.id }
-					]
+					userId: user.id,
+					matchedUserId: otherUserId
 				}
 			});
 
