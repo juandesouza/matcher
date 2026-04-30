@@ -1,8 +1,5 @@
 import { json } from '@sveltejs/kit';
 import { requireAuth } from '$lib/auth/utils.js';
-import { writeFile, mkdir, access } from 'fs/promises';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
 
 /**
  * @param {File} file
@@ -46,32 +43,14 @@ export async function POST({ request, cookies }) {
 			return json({ error: 'File must be less than 5MB', stage, fileSize: file.size }, { status: 400 });
 		}
 		
-		stage = 'mkdir';
-		// In production adapter-node serves static assets from build/client.
-		// In local dev, static assets live under static/.
-		const buildClientDir = join(process.cwd(), 'build', 'client');
-		let uploadsDir = join(buildClientDir, 'uploads', 'photos');
-		try {
-			await access(buildClientDir);
-		} catch {
-			uploadsDir = join(process.cwd(), 'static', 'uploads', 'photos');
-		}
-		await mkdir(uploadsDir, { recursive: true });
-		
-		stage = 'write';
-		// Generate unique filename
-		// @ts-ignore - validated by isFileLike guard above
-		const fileExt = file.name.split('.').pop();
-		const filename = `${randomUUID()}.${fileExt}`;
-		const filepath = join(uploadsDir, filename);
-		
-		// Save file
+		stage = 'encode';
+		// Encode and return as data URL (avoids broken links on ephemeral storage)
 		// @ts-ignore - validated by isFileLike guard above
 		const arrayBuffer = await file.arrayBuffer();
-		await writeFile(filepath, Buffer.from(arrayBuffer));
-		
-		// Return app-served URL (works in dev/prod regardless of static adapter behavior)
-		const photoUrl = `/uploads/photos/${filename}`;
+		const bytes = Buffer.from(arrayBuffer);
+		// @ts-ignore - validated by isFileLike guard above
+		const mimeType = file.type?.startsWith('image/') ? file.type : 'image/jpeg';
+		const photoUrl = `data:${mimeType};base64,${bytes.toString('base64')}`;
 		
 		return json({ photoUrl });
 	} catch (error) {
@@ -81,13 +60,6 @@ export async function POST({ request, cookies }) {
 			code: error?.code,
 			name: error?.name
 		});
-		if (error?.code === 'EROFS' || error?.code === 'EACCES') {
-			return json({
-				error: 'Server cannot write uploaded files right now',
-				stage,
-				code: error?.code
-			}, { status: 500 });
-		}
 		if (error?.status === 401) {
 			return json({ error: 'Session expired. Please log in again.', stage }, { status: 401 });
 		}
