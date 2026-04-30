@@ -17,7 +17,9 @@
 	let currentSavedPhoto = null;
 	let imageLoadFailed = false;
 	let isLoading = false;
+	let uploadProgress = 0;
 	let error = '';
+	let success = '';
 	
 	onMount(() => {
 		if (data.user) {
@@ -61,6 +63,39 @@
 		};
 		reader.readAsDataURL(file);
 		error = '';
+		success = '';
+	}
+
+	/**
+	 * @param {File} file
+	 * @returns {Promise<string>}
+	 */
+	function uploadPhotoWithProgress(file) {
+		return new Promise((resolve, reject) => {
+			const formData = new FormData();
+			formData.append('photo', file);
+
+			const xhr = new XMLHttpRequest();
+			xhr.open('POST', '/api/upload/photo');
+			xhr.responseType = 'json';
+
+			xhr.upload.onprogress = (e) => {
+				if (!e.lengthComputable) return;
+				uploadProgress = Math.round((e.loaded / e.total) * 100);
+			};
+
+			xhr.onload = () => {
+				const payload = xhr.response || {};
+				if (xhr.status >= 200 && xhr.status < 300 && payload.photoUrl) {
+					resolve(payload.photoUrl);
+					return;
+				}
+				reject(new Error(payload.error || `Failed to upload photo (status ${xhr.status})`));
+			};
+
+			xhr.onerror = () => reject(new Error('Network error while uploading photo'));
+			xhr.send(formData);
+		});
 	}
 	
 	async function handleSaveProfile() {
@@ -75,28 +110,16 @@
 		}
 
 		isLoading = true;
+		uploadProgress = 0;
 		error = '';
+		success = '';
 
 		try {
 			let photoUrl = currentSavedPhoto;
 
 			// Upload new photo only when user explicitly saves
 			if (profilePicture) {
-				const formData = new FormData();
-				formData.append('photo', profilePicture);
-
-				const uploadResponse = await fetch('/api/upload/photo', {
-					method: 'POST',
-					body: formData
-				});
-
-				if (!uploadResponse.ok) {
-					const errorData = await uploadResponse.json().catch(() => ({}));
-					throw new Error(errorData.error || 'Failed to upload photo');
-				}
-
-				const { photoUrl: newPhotoUrl } = await uploadResponse.json();
-				photoUrl = newPhotoUrl;
+				photoUrl = await uploadPhotoWithProgress(profilePicture);
 			}
 
 			const updateResponse = await fetch('/api/profile', {
@@ -119,11 +142,13 @@
 			selectedFileName = '';
 			imageLoadFailed = false;
 			profilePicturePreview = photoUrl;
+			success = 'Profile saved successfully.';
 		} catch (err) {
 			console.error('Profile save error:', err);
 			error = err instanceof Error ? err.message : 'Failed to save profile. Please try again.';
 		} finally {
 			isLoading = false;
+			uploadProgress = 0;
 		}
 	}
 </script>
@@ -140,10 +165,15 @@
 		</div>
 		
 		<div class="card p-6">
-			<form on:submit|preventDefault class="space-y-6">
+			<form on:submit|preventDefault={handleSaveProfile} class="space-y-6">
 				{#if error}
 					<div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
 						{error}
+					</div>
+				{/if}
+				{#if success}
+					<div class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg text-sm">
+						{success}
 					</div>
 				{/if}
 				
@@ -212,27 +242,28 @@
 							</p>
 						{/if}
 						
-						<label
-							for="photo-input"
-							class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-crimson-pulse transition-colors"
-						>
-							<div class="flex flex-col items-center justify-center pt-5 pb-6">
-								<Upload class="text-text-light/60 mb-2" size={24} />
-								<p class="text-sm text-text-light/80">
-									<span class="font-semibold">Click to upload</span> or drag and drop
-								</p>
-								<p class="text-xs text-text-light/60 mt-1">PNG, JPG up to 5MB</p>
-							</div>
-							<input
-								id="photo-input"
-								type="file"
-								accept="image/*"
-								on:change={handleFileSelect}
-								class="hidden"
-							/>
-						</label>
+						<input
+							id="photo-input"
+							type="file"
+							accept="image/*"
+							on:change={handleFileSelect}
+							class="w-full text-sm text-text-light file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-crimson-pulse file:text-white bg-gray-800 rounded-lg p-2"
+						/>
 					</div>
 				</div>
+				{#if isLoading && selectedFileName}
+					<div class="space-y-2">
+						<div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+							<div
+								class="h-full bg-crimson-pulse transition-all duration-150"
+								style={`width: ${uploadProgress}%`}
+							></div>
+						</div>
+						<p class="text-xs text-text-light/60 text-center">
+							Uploading image... {uploadProgress}%
+						</p>
+					</div>
+				{/if}
 				
 				<div class="flex gap-4">
 					<button
@@ -242,14 +273,13 @@
 					>
 						Back to Settings
 					</button>
-					<Button
-						type="button"
-						className="w-full border-white"
+					<button
+						type="submit"
+						class="w-full btn-rounded bg-gray-800 hover:bg-gray-700 text-white border-2 border-white disabled:opacity-50"
 						disabled={isLoading}
-						on:click={handleSaveProfile}
 					>
 						Save Changes
-					</Button>
+					</button>
 				</div>
 				
 				{#if isLoading}
