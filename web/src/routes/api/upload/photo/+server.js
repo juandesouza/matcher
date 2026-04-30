@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { requireAuth } from '$lib/auth/utils.js';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, access } from 'fs/promises';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
@@ -47,8 +47,15 @@ export async function POST({ request, cookies }) {
 		}
 		
 		stage = 'mkdir';
-		// Create uploads directory if it doesn't exist
-		const uploadsDir = join(process.cwd(), 'static', 'uploads', 'photos');
+		// In production adapter-node serves static assets from build/client.
+		// In local dev, static assets live under static/.
+		const buildClientDir = join(process.cwd(), 'build', 'client');
+		let uploadsDir = join(buildClientDir, 'uploads', 'photos');
+		try {
+			await access(buildClientDir);
+		} catch {
+			uploadsDir = join(process.cwd(), 'static', 'uploads', 'photos');
+		}
 		await mkdir(uploadsDir, { recursive: true });
 		
 		stage = 'write';

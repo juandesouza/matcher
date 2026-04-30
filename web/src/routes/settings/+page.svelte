@@ -6,7 +6,6 @@
 	import { locale, _ } from 'svelte-i18n';
 	import { Moon, Sun, DollarSign, LogOut, Globe, User, Trash2 } from 'lucide-svelte';
 	import Button from '$lib/components/Button.svelte';
-	import { goto } from '$app/navigation';
 	
 	let ageRange = { min: 18, max: 99 };
 	let distanceRange = 50; // km
@@ -246,13 +245,13 @@
 						<h2 class="text-xl font-semibold text-text-light mb-1">Profile</h2>
 						<p class="text-text-light/60 text-sm">Edit your profile information</p>
 					</div>
-					<button
+					<a
+						href="/profile/edit"
 						class="btn-rounded bg-crimson-pulse text-white px-6 py-3 flex items-center gap-2"
-						on:click={() => goto('/profile/edit')}
 					>
 						<User size={20} />
 						Edit Profile
-					</button>
+					</a>
 				</div>
 			</div>
 			
