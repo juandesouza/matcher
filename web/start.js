@@ -2,6 +2,7 @@
 // Startup wrapper to set up __dirname polyfill before loading the app
 // This is needed because Prisma's generated client uses __dirname which doesn't exist in ES modules
 
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createRequire } from 'module';
@@ -60,7 +61,28 @@ if (typeof global.__filename === 'undefined') {
 
 // For Prisma's require() calls, we also need to ensure the module system can resolve __dirname
 // This is a workaround for Prisma's generated code that uses __dirname in require() calls
-const require = createRequire(import.meta.url);
+createRequire(import.meta.url);
+
+function runMigrations() {
+	if (process.env.SKIP_DB_MIGRATE === 'true' || !process.env.DATABASE_URL) {
+		return;
+	}
+
+	console.log('Running database migrations...');
+	execSync('npx prisma migrate deploy', {
+		stdio: 'inherit',
+		cwd: __dirname,
+		env: process.env
+	});
+	console.log('Database migrations complete.');
+}
+
+try {
+	runMigrations();
+} catch (error) {
+	console.error('Database migration failed:', error);
+	process.exit(1);
+}
 
 // Now import and run the actual app
 // The polyfill should be available when Prisma's code loads

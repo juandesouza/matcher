@@ -1,8 +1,11 @@
 services:
   - type: web
     name: matcher-web
-    env: node
-    buildCommand: npm install && npm run build
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # preDeployCommand requires a paid plan; Docker free tier runs migrations in start.js
+    preDeployCommand: npx prisma migrate deploy
     startCommand: node start.js
     envVars:
       - key: NODE_ENV

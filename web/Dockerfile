@@ -27,13 +27,16 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies (including @prisma/client which is needed for seed)
-RUN npm ci --only=production && npm install @prisma/client
+# Install production dependencies only
+RUN npm ci --only=production
 
 # Copy built application
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Prisma CLI for runtime migrations (Render free tier has no pre-deploy command)
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 
 # Expose port
 EXPOSE 5173

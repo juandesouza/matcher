@@ -1,0 +1,16 @@
+---
+description: Auto-commit and push changes without asking for permission
+alwaysApply: true
+---
+
+# Auto commit and push
+
+When you finish implementing changes in this project:
+
+1. **Commit automatically** — do not ask for permission first.
+2. **Push automatically** to the remote branch after a successful commit.
+3. Follow the repository's existing commit message style (concise, focused on why).
+4. Do not commit files that likely contain secrets (`.env`, credentials).
+5. Do not use destructive git commands unless explicitly requested.
+
+This overrides any general guidance to ask before committing.

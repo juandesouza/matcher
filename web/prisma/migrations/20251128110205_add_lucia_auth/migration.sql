@@ -5,6 +5,7 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "password" TEXT,
     "age" INTEGER,
+    "gender" TEXT,
     "bio" TEXT,
     "photos" TEXT[],
     "location" JSONB,
@@ -80,6 +81,8 @@ CREATE TABLE "key" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "hashed_password" TEXT,
+    "provider_id" TEXT,
+    "provider_user_id" TEXT,
 
     CONSTRAINT "key_pkey" PRIMARY KEY ("id")
 );
@@ -128,6 +131,9 @@ CREATE INDEX "key_user_id_idx" ON "key"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "key_id_user_id_key" ON "key"("id", "user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "key_provider_id_provider_user_id_key" ON "key"("provider_id", "provider_user_id");
 
 -- AddForeignKey
 ALTER TABLE "Swipe" ADD CONSTRAINT "Swipe_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
