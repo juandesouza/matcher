@@ -26,34 +26,63 @@
 	const MAX_UPLOAD_BYTES = 500 * 1024; // keep below upstream 512KB limit
 	
 	onMount(async () => {
-		// Get user's current location
 		await getLocation();
 	});
-	
-	async function getLocation() {
-		if (!navigator.geolocation) {
-			locationStatus = 'Geolocation not supported by your browser';
-			return;
+
+	/**
+	 * @param {GeolocationPositionError} error
+	 */
+	function geolocationErrorMessage(error) {
+		if (error.code === error.PERMISSION_DENIED) {
+			return 'Location access denied. Please enable location services.';
 		}
-		
-		navigator.geolocation.getCurrentPosition(
-			(position) => {
-				location = {
-					lat: position.coords.latitude,
-					lng: position.coords.longitude
-				};
-				locationStatus = 'Location found ✓';
-			},
-			(error) => {
-				console.error('Geolocation error:', error);
-				locationStatus = 'Location access denied. Please enable location services.';
-			},
-			{
-				enableHighAccuracy: true,
-				timeout: 10000,
-				maximumAge: 0
+		if (error.code === error.TIMEOUT) {
+			return 'Location request timed out. Tap "Retry location" to try again.';
+		}
+		return 'Could not get your location. Tap "Retry location" to try again.';
+	}
+
+	/**
+	 * @returns {Promise<{ lat: number; lng: number }>}
+	 */
+	function requestLocation() {
+		return new Promise((resolve, reject) => {
+			if (!navigator.geolocation) {
+				reject(new Error('Geolocation not supported by your browser'));
+				return;
 			}
-		);
+
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					const coords = {
+						lat: position.coords.latitude,
+						lng: position.coords.longitude
+					};
+					location = coords;
+					locationStatus = 'Location found ✓';
+					resolve(coords);
+				},
+				(error) => {
+					console.error('Geolocation error:', error);
+					locationStatus = geolocationErrorMessage(error);
+					reject(error);
+				},
+				{
+					enableHighAccuracy: false,
+					timeout: 20000,
+					maximumAge: 60000
+				}
+			);
+		});
+	}
+
+	async function getLocation() {
+		locationStatus = 'Getting location...';
+		try {
+			await requestLocation();
+		} catch {
+			// Status message already set in requestLocation error handler.
+		}
 	}
 
 	/**
@@ -275,8 +304,13 @@
 		}
 		
 		if (!location) {
-			error = 'Please allow location access to continue';
-			return;
+			try {
+				locationStatus = 'Getting location...';
+				await requestLocation();
+			} catch {
+				error = 'Please allow location access to continue';
+				return;
+			}
 		}
 		
 		isLoading = true;
@@ -348,9 +382,20 @@
 				{/if}
 				
 				<!-- Location Status -->
-				<div class="flex items-center gap-2 text-sm">
-					<MapPin class="text-text-light/60" size={20} />
-					<span class="text-text-light/80">{locationStatus}</span>
+				<div class="flex items-center justify-between gap-2 text-sm">
+					<div class="flex items-center gap-2 min-w-0">
+						<MapPin class="text-text-light/60 shrink-0" size={20} />
+						<span class="text-text-light/80">{locationStatus}</span>
+					</div>
+					{#if !location}
+						<button
+							type="button"
+							class="shrink-0 text-crimson-pulse hover:underline text-xs"
+							on:click={getLocation}
+						>
+							Retry location
+						</button>
+					{/if}
 				</div>
 				
 				<!-- Age -->

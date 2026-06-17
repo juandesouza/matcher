@@ -44,6 +44,7 @@
 	type={type}
 	disabled={disabled}
 	class={buttonClass}
+	on:click
 	{...$$restProps}
 >
 	<slot />

@@ -27,9 +27,9 @@ $: void data;
 			const data = await response.json();
 			
 			if (response.ok) {
-				goto('/');
+				window.location.href = '/';
 			} else {
-				error = data.error || 'Failed to create test user';
+				error = data.error || data.message || 'Failed to create test user';
 			}
 		} catch (err) {
 			console.error('Test user login error:', err);
@@ -86,13 +86,13 @@ $: void data;
 		</div>
 		
 		<div class="card p-6">
+			{#if error}
+				<div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm mb-4">
+					{error}
+				</div>
+			{/if}
+
 			<form on:submit={handleEmailLogin} class="space-y-4">
-				{#if error}
-					<div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
-						{error}
-					</div>
-				{/if}
-				
 				<div>
 					<label class="block text-sm text-text-light/80 mb-2" for="email-input">{$_('auth.email')}</label>
 					<div class="relative">
