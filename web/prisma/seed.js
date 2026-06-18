@@ -174,8 +174,9 @@ async function createFakeUsers(gender, count) {
 }
 
 async function main() {
+	const countPerGender = Number(process.env.SEED_FAKE_COUNT_PER_GENDER || 20);
 	console.log('🌱 Starting database seed...\n');
-	console.log('This will create 2 fake men and 2 fake women in the database.\n');
+	console.log(`This will create ${countPerGender} fake men and ${countPerGender} fake women in the database.\n`);
 
 	// Delete all existing fake users first (if tables exist)
 	console.log('🗑️  Deleting existing fake users...');
@@ -207,11 +208,10 @@ async function main() {
 		}
 	}
 
-	// Create 2 fake women
-	const womenCreated = await createFakeUsers('female', 2);
+	// Create fake women and men
+	const womenCreated = await createFakeUsers('female', countPerGender);
 
-	// Create 2 fake men
-	const menCreated = await createFakeUsers('male', 2);
+	const menCreated = await createFakeUsers('male', countPerGender);
 
 	console.log('\n' + '='.repeat(50));
 	console.log(`✅ Seed completed successfully!`);
